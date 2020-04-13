@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {Platform, StatusBar, StyleSheet, View} from 'react-native';
+import {StatusBar, StyleSheet, View} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 
