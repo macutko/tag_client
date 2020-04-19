@@ -37,11 +37,9 @@ export class SignIn extends React.Component {
 
 
     toggleLoginForm = () => {
-        console.log(this.state.loginForm);
         this.setState(state => ({
             loginForm: !state.loginForm
         }));
-        console.log(this.state.loginForm);
     };
 
 
@@ -66,9 +64,11 @@ export class SignIn extends React.Component {
 
 
                         <View style={styles.modalBody}>
+                            {/* // TODO need to get rid of this buton - go straight to the login form
+                            // initially i was hoping to have social media login but first i need the basics */}
                             {this.state.loginForm ? <LoginForm/> :
                                 <Button onPress={() => this.toggleLoginForm()} containerStyle={{width: '100%'}}
-                                        title="Using Facebook" type="outline"
+                                        title="Using Username" type="outline"
                                         raised={true}/>}
                         </View>
                     </View>

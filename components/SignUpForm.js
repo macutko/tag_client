@@ -11,29 +11,30 @@ export class SignUpForm extends React.Component {
         }
     };
 
-    // componentDidMount () {
-    //     axiosConfig.post('http://192.168.0.187:80/services/create_user/', {
-    //         first_name: "Mato",
-    //         last_name: "Grad",
-    //         email: "mwm@mwm.sk",
-    //         username: "matias",
-    //         password: "686tnt",
-    //     })
-    //         .then(function (response) {
-    //             console.log(response);
-    //         })
-    //         .catch(function (error) {
-    //             console.log(error);
-    //         });
-    //
-    //
-    // };
+
+    validate_email = (text) => {
+        console.log(text);
+        let reg = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+        if (reg.test(text) === false) {
+            console.log("Email is Not Correct");
+            this.setState({ email: text })
+            return false;
+        }
+        else {
+            this.setState({ email: text })
+            console.log("Email is Correct");
+            return true;
+        }
+    };
 
     onChangeText = (text, name) => {
         this.setState({
             [name]: text
         });
+        // TODO: use the validate function to check if the email entered is a valid type
         // TODO: if name is username check if the username is still available
+        // TODO: password check strenght (might need to get the server involved)
+        // TODO: make the input text smaller
     };
 
     submitForm = () => {
@@ -41,7 +42,7 @@ export class SignUpForm extends React.Component {
                     first_name: this.state.first_name,
                     last_name: this.state.last_name,
                     email: this.state.email,
-                    username:this.state.username,
+                    username: this.state.username,
                     password: this.state.password,
                 })
                     .then(function (response) {

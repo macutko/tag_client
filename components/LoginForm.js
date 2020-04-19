@@ -1,5 +1,7 @@
-import {View, Text} from 'react-native';
+import {View} from 'react-native';
 import * as React from 'react';
+import {Button, Input} from "react-native-elements";
+import axiosConfig from "../constants/axiosConfig";
 
 export class LoginForm extends React.Component {
 
@@ -9,12 +11,62 @@ export class LoginForm extends React.Component {
             isVisible: false,
         }
     }
+    onChangeText = (text, name) => {
+        this.setState({
+            [name]: text
+        });
+    };
+// TODO: need to accept and check for Upper and Lower case in both create user and login
+    submitForm = () => {
+        axiosConfig.post('/services/api/token/', {
+            username: this.state.username,
+            password: this.state.password,
+        })
+            .then(function (response) {
+                // TODO: if logged in - got to game Dashboard
+                // TODO: save token as well and set the timer to refresh it
+            })
+            .catch(function (error) {
+                if (error.response.status === 401){
+                    console.log("User not registered") // TODO display to user!
+                }
+                else{
+                    console.log("Havent accounted for this error code") // TODO: handle more error codes
+                }
+            });
+    };
 
     render() {
         return (
             <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
-                <Text>LoginForm</Text>
+
+                <Input inputContainerStyle={input_style}
+                       inputStyle={input_text_style}
+                       placeholder='username'
+                       onChangeText={text => this.onChangeText(text, "username")}
+                       autoCompleteType={'username'}
+                />
+                <Input inputContainerStyle={input_style}
+                       inputStyle={input_text_style}
+                       placeholder='Password'
+                       onChangeText={text => this.onChangeText(text, "password")}
+                       autoCompleteType={'password'}
+                       secureTextEntry={true}
+                       textContentType={"password"}
+                       password={true}
+                />
+                <Button containerStyle={{width: '75%'}} title="Login In" type="outline" raised={true}
+                        onPress={() => this.submitForm()}
+                />
+
             </View>
         );
     }
 }
+
+const input_style = {
+    width: '75%',
+};
+const input_text_style = {
+    fontSize: 15,
+};
