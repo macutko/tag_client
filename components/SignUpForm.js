@@ -1,6 +1,6 @@
 import {View} from 'react-native';
 import * as React from 'react';
-import {Button, Icon, Input} from 'react-native-elements';
+import {Button, Input} from 'react-native-elements';
 import axiosConfig from '../constants/axiosConfig';
 
 export class SignUpForm extends React.Component {
@@ -29,7 +29,7 @@ export class SignUpForm extends React.Component {
 
     onChangeText = (text, name) => {
         this.setState({
-            [name]: text
+            [name]: text.toLowerCase()
         });
         // TODO: use the validate function to check if the email entered is a valid type
         // TODO: if name is username check if the username is still available

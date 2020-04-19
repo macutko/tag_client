@@ -1,10 +1,10 @@
 import {View, StyleSheet} from 'react-native';
 import * as React from 'react';
 import {Button, Icon, Overlay} from "react-native-elements";
-import {LoginForm} from "./LoginForm";
-import {SignUpForm} from "./SignUpForm";
+import {LoginForm} from "../components/LoginForm";
+import {SignUpForm} from "../components/SignUpForm";
 
-export class SignIn extends React.Component {
+export class SignInScreen extends React.Component {
 
     constructor(props) {
         super(props);
@@ -55,7 +55,6 @@ export class SignIn extends React.Component {
 
 
                 <Overlay isVisible={this.state.isLoginVisible}>
-                    {/*<Text onPress={() => this.toggleModal()}>Hello from {String(this.state.isLoginVisible)}</Text>*/}
 
                     <View style={styles.modalView}>
                         <Icon containerStyle={{alignItems: 'flex-end', justifyContent: 'flex-end', padding:10}}
@@ -66,7 +65,7 @@ export class SignIn extends React.Component {
                         <View style={styles.modalBody}>
                             {/* // TODO need to get rid of this buton - go straight to the login form
                             // initially i was hoping to have social media login but first i need the basics */}
-                            {this.state.loginForm ? <LoginForm/> :
+                            {this.state.loginForm ? <LoginForm login={this.props.login}/> :
                                 <Button onPress={() => this.toggleLoginForm()} containerStyle={{width: '100%'}}
                                         title="Using Username" type="outline"
                                         raised={true}/>}

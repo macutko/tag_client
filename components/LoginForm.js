@@ -13,20 +13,22 @@ export class LoginForm extends React.Component {
     }
     onChangeText = (text, name) => {
         this.setState({
-            [name]: text
+            [name]: text.toLowerCase()
         });
     };
-// TODO: need to accept and check for Upper and Lower case in both create user and login
+
+
     submitForm = () => {
         axiosConfig.post('/services/api/token/', {
             username: this.state.username,
             password: this.state.password,
         })
-            .then(function (response) {
+            .then(response => {
                 // TODO: if logged in - got to game Dashboard
+                this.props.login()
                 // TODO: save token as well and set the timer to refresh it
             })
-            .catch(function (error) {
+            .catch(error => {
                 if (error.response.status === 401){
                     console.log("User not registered") // TODO display to user!
                 }
