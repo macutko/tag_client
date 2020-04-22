@@ -1,4 +1,4 @@
-import {View} from 'react-native';
+import {AsyncStorage, View} from 'react-native';
 import * as React from 'react';
 import {Button, Input} from 'react-native-elements';
 import axiosConfig from '../constants/axiosConfig';
@@ -7,8 +7,7 @@ export class SignUpForm extends React.Component {
 
     constructor(props) {
         super(props);
-        this.state = {
-        }
+        this.state = {}
     };
 
 
@@ -17,11 +16,10 @@ export class SignUpForm extends React.Component {
         let reg = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
         if (reg.test(text) === false) {
             console.log("Email is Not Correct");
-            this.setState({ email: text })
+            this.setState({email: text})
             return false;
-        }
-        else {
-            this.setState({ email: text })
+        } else {
+            this.setState({email: text})
             console.log("Email is Correct");
             return true;
         }
@@ -36,21 +34,29 @@ export class SignUpForm extends React.Component {
         // TODO: password check strenght (might need to get the server involved)
         // TODO: make the input text smaller
     };
+    _storeData = async (key, value) => {
+        try {
+            await AsyncStorage.setItem(key, value);
+        } catch (error) {
+            console.log("Error saving data!!!")
+        }
+    };
 
     submitForm = () => {
         axiosConfig.post('/services/create_user/', {
-                    first_name: this.state.first_name,
-                    last_name: this.state.last_name,
-                    email: this.state.email,
-                    username: this.state.username,
-                    password: this.state.password,
-                })
-                    .then(function (response) {
-                        console.log(response);
-                    })
-                    .catch(function (error) {
-                        console.log(error);
-                    });
+            first_name: this.state.first_name,
+            last_name: this.state.last_name,
+            email: this.state.email,
+            username: this.state.username,
+            password: this.state.password,
+        })
+            .then(response => {
+                this._storeData("access_key", response.data.token.access);
+                this._storeData("refresh_key", response.data.token.refresh);
+            })
+            .catch(error =>  {
+                console.log(error);
+            });
     };
 
     render() {

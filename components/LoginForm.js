@@ -2,6 +2,7 @@ import {View} from 'react-native';
 import * as React from 'react';
 import {Button, Input} from "react-native-elements";
 import axiosConfig from "../constants/axiosConfig";
+import {AsyncStorage} from 'react-native';
 
 export class LoginForm extends React.Component {
 
@@ -17,6 +18,13 @@ export class LoginForm extends React.Component {
         });
     };
 
+    _storeData = async (key,value) => {
+        try {
+            await AsyncStorage.setItem(key, value);
+        } catch (error) {
+            console.log("Error saving data!!!")
+        }
+    };
 
     submitForm = () => {
         axiosConfig.post('/services/api/token/', {
@@ -25,6 +33,10 @@ export class LoginForm extends React.Component {
         })
             .then(response => {
                 // TODO: if logged in - got to game Dashboard
+                console.log("Logged in!");
+                this._storeData("access_key", response.data.access);
+                this._storeData("refresh_key", response.data.refresh);
+                console.log(this.props);
                 this.props.login()
                 // TODO: save token as well and set the timer to refresh it
             })

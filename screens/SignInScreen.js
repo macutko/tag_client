@@ -12,7 +12,7 @@ export class SignInScreen extends React.Component {
             isLoginVisible: false,
             loginForm: false,
             isSignUpVisible: false,
-        }
+        };
     }
 
     toggleLoginModal = () => {
@@ -42,6 +42,11 @@ export class SignInScreen extends React.Component {
         }));
     };
 
+    handleLoggin = () => {
+        this.toggleLoginForm();
+        this.toggleLoginModal();
+        this.props.navigation.navigate('GameScreen')
+    };
 
     render() {
         return (
@@ -65,7 +70,7 @@ export class SignInScreen extends React.Component {
                         <View style={styles.modalBody}>
                             {/* // TODO need to get rid of this buton - go straight to the login form
                             // initially i was hoping to have social media login but first i need the basics */}
-                            {this.state.loginForm ? <LoginForm login={this.props.login}/> :
+                            {this.state.loginForm ? <LoginForm login={this.handleLoggin}/> :
                                 <Button onPress={() => this.toggleLoginForm()} containerStyle={{width: '100%'}}
                                         title="Using Username" type="outline"
                                         raised={true}/>}

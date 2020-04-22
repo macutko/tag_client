@@ -1,4 +1,5 @@
 import * as React from 'react';
+import 'react-native-gesture-handler';
 import {StatusBar, StyleSheet, View} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
@@ -8,55 +9,14 @@ import {GameScreen} from "./screens/GameScreen";
 
 const Stack = createStackNavigator();
 
-export default class App extends React.Component {
-
-    constructor(props) {
-        super(props);
-        this.state = {
-            loggedIn: false,
-        }
-        this.log_in = this.log_in.bind(this)
-    }
-
-    log_in() {
-        this.setState({
-            loggedIn: true
-        })
-    };
-
-    render() {
-        return (
-            <View style={styles.container}>
-                <StatusBar hidden={true}/>
-                <NavigationContainer>
-                    <Stack.Navigator screenOptions={{headerShown: false}}>
-                        {this.state.loggedIn ?
-
-
-                            <Stack.Screen name="GameScreen" component={GameScreen}/>
-
-
-                            :
-
-
-                            <Stack.Screen name="SignInScreen">
-                                {props => <SignInScreen login={this.log_in}/>}
-                            </Stack.Screen>
-
-
-                        }
-                    </Stack.Navigator>
-                </NavigationContainer>
-            </View>
-
-        )
-    }
+export default function App(){
+    return (
+        <NavigationContainer>
+            <StatusBar hidden={true}/>
+            <Stack.Navigator screenOptions={{headerShown: false}}>
+                <Stack.Screen name="SignInScreen" component={SignInScreen}/>
+                <Stack.Screen name="GameScreen" component={GameScreen}/>
+            </Stack.Navigator>
+        </NavigationContainer>
+    );
 }
-
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#fff',
-    },
-});
