@@ -1,6 +1,7 @@
 import {View, StyleSheet} from 'react-native';
 import * as React from 'react';
-import {Button, Icon, Overlay} from "react-native-elements";
+import {Button} from "react-native-elements";
+import {FormOverlay} from "../components/FormOverlay";
 import {LoginForm} from "../components/LoginForm";
 import {SignUpForm} from "../components/SignUpForm";
 
@@ -9,94 +10,51 @@ export class SignInScreen extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            isLoginVisible: false,
-            loginForm: false,
-            isSignUpVisible: false,
+            showLogin: false,
+            showSignUp: false,
         };
     }
 
     toggleLoginModal = () => {
         this.setState(state => ({
-            isLoginVisible: !state.isLoginVisible,
+            showLogin: !state.showLogin,
         }));
     };
 
     toggleSignUpModal = () => {
         this.setState(state => ({
-            isSignUpVisible: !state.isSignUpVisible,
+            showSignUp: !state.showSignUp,
         }));
     };
 
     closeModal = () => {
         this.setState(state => ({
-            loginForm: false,
-            isLoginVisible: false,
-            isSignUpVisible: false,
+            showLogin: false,
+            showSignUp: false,
         }))
     };
 
-
-    toggleLoginForm = () => {
-        this.setState(state => ({
-            loginForm: !state.loginForm
-        }));
-    };
-
     handleLoggin = () => {
-        this.toggleLoginForm();
-        this.toggleLoginModal();
-        this.props.navigation.navigate('GameScreen')
+        this.closeModal();
+        this.props.navigation.navigate('GameScreen');
     };
 
-    render() {
+    render = () => {
+        var LoginModal = this.state.showLogin ? <FormOverlay elt={<LoginForm login={this.handleLoggin}/>} visible={this.state.showLogin} close={this.closeModal}/> : null;
+        var SignUpModal = this.state.showSignUp ? <FormOverlay elt={<SignUpForm/>} visible={this.state.showSignUp} close={this.closeModal}/> : null;
         return (
             <View style={styles.mainView}>
 
                 <Button containerStyle={{width: '75%', marginBottom: 10}} title="Sign In!" type="outline"
                         raised={true} onPress={() => this.toggleLoginModal()}/>
+
+
                 <Button containerStyle={{width: '75%'}} title="Create Account" type="outline" raised={true}
-                       onPress={() => this.toggleSignUpModal()}
+                        onPress={() => this.toggleSignUpModal()}
                 />
 
-
-                <Overlay isVisible={this.state.isLoginVisible}>
-
-                    <View style={styles.modalView}>
-                        <Icon containerStyle={{alignItems: 'flex-end', justifyContent: 'flex-end', padding:10}}
-                              onPress={() => this.closeModal()} name='close' type='font-awesome' color='black'
-                              size={20}/>
-
-
-                        <View style={styles.modalBody}>
-                            {/* // TODO need to get rid of this buton - go straight to the login form
-                            // initially i was hoping to have social media login but first i need the basics */}
-                            {this.state.loginForm ? <LoginForm login={this.handleLoggin}/> :
-                                <Button onPress={() => this.toggleLoginForm()} containerStyle={{width: '100%'}}
-                                        title="Using Username" type="outline"
-                                        raised={true}/>}
-                        </View>
-                    </View>
-
-
-                </Overlay>
-
-                <Overlay isVisible={this.state.isSignUpVisible}>
-                    {/*<Text onPress={() => this.toggleModal()}>Hello from {String(this.state.isLoginVisible)}</Text>*/}
-
-                    <View style={styles.modalView}>
-                        <Icon containerStyle={{alignItems: 'flex-end', justifyContent: 'flex-end', padding:10}}
-                              onPress={() => this.closeModal()} name='close' type='font-awesome' color='black'
-                              size={20}/>
-
-
-                        <View style={styles.modalBody}>
-                            <SignUpForm/>
-                        </View>
-                    </View>
-
-
-                </Overlay>
-
+                {LoginModal}
+                {SignUpModal}
 
             </View>
 
@@ -105,11 +63,5 @@ export class SignInScreen extends React.Component {
 }
 
 const styles = StyleSheet.create({
-    // container: {
-    //     flex: 1,
-    //     backgroundColor: '#fff',
-    // },
     mainView: {flex: 1, alignItems: 'center', justifyContent: 'center'},
-    modalView: {flex: 1, margin: 5},
-    modalBody: {flex: 1, alignItems: 'center', justifyContent: 'center'}
 });

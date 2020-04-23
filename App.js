@@ -18,10 +18,22 @@ export default class App extends React.Component {
         };
     }
 
+    _retrieveKey = async (key) => {
+        try {
+            const value = await AsyncStorage.getItem(key);
+            if (value !== null) {
+                // We have data!!
+                console.log(value);
+            }
+        } catch (error) {
+            // Error retrieving data
+        }
+    };
+
     componentDidMount() {
         try{
             console.log("This is where we check for valid token");
-
+            this._retrieveKey("refresh_key")
         } catch (error){
             console.log(error)
         }
@@ -34,6 +46,7 @@ export default class App extends React.Component {
     _handleAppStateChange = (nextAppState) => {
         if (this.state.appState.match(/inactive|background/) && nextAppState === 'active') {
             console.log('App has come to the foreground!')
+            console.log(this._retrieveKey("refresh_key"))
         }
         this.setState({appState: nextAppState});
     };

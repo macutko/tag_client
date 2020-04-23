@@ -25,6 +25,17 @@ export class LoginForm extends React.Component {
             console.log("Error saving data!!!")
         }
     };
+    _retrieveKey = async (key) => {
+        try {
+            const value = await AsyncStorage.getItem(key);
+            if (value !== null) {
+                // We have data!!
+                console.log(value);
+            }
+        } catch (error) {
+            // Error retrieving data
+        }
+    };
 
     submitForm = () => {
         axiosConfig.post('/services/api/token/', {
