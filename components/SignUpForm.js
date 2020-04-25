@@ -1,7 +1,8 @@
-import {AsyncStorage, View} from 'react-native';
+import {View} from 'react-native';
 import * as React from 'react';
 import {Button, Input} from 'react-native-elements';
 import axiosConfig from '../constants/axiosConfig';
+import AsyncStorage from '@react-native-community/async-storage';
 
 export class SignUpForm extends React.Component {
 
@@ -16,10 +17,10 @@ export class SignUpForm extends React.Component {
         let reg = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
         if (reg.test(text) === false) {
             console.log("Email is Not Correct");
-            this.setState({email: text})
+            this.setState({email: text});
             return false;
         } else {
-            this.setState({email: text})
+            this.setState({email: text});
             console.log("Email is Correct");
             return true;
         }

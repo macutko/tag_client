@@ -2,7 +2,7 @@ import {View} from 'react-native';
 import * as React from 'react';
 import {Button, Input} from "react-native-elements";
 import axiosConfig from "../constants/axiosConfig";
-import {AsyncStorage} from 'react-native';
+import AsyncStorage from '@react-native-community/async-storage';
 
 export class LoginForm extends React.Component {
 
