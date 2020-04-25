@@ -6,6 +6,7 @@
   },
   "dependencies": {
     "@react-native-community/masked-view": "0.1.5",
+    "@react-native-mapbox-gl/maps": "^8.0.0",
     "@react-navigation/native": "^5.1.6",
     "@react-navigation/stack": "^5.0.0-alpha.58",
     "@react-navigation/web": "~1.0.0-alpha.9",
