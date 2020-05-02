@@ -1,10 +1,14 @@
-import {ActivityIndicator, StyleSheet, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 import * as React from 'react';
 import MapboxGL from "@react-native-mapbox-gl/maps";
-import {PermissionsAndroid, Image} from 'react-native';
+import {PermissionsAndroid} from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
+import distance from "../constants/distance";
+import axiosConfig from "../constants/axiosConfig";
+import AsyncStorage from '@react-native-community/async-storage';
 
 MapboxGL.setAccessToken('pk.eyJ1IjoibWFjdXRrbyIsImEiOiJjazlmbTgzbXAwY25tM2V0MDJ0eHgxbTBwIn0.np9dHqzUS0HEKSlbejOlbQ');
+
 const requestPermission = async () => {
     try {
         const granted = await PermissionsAndroid.requestMultiple([
@@ -26,11 +30,27 @@ const requestPermission = async () => {
 
 export class GameScreen extends React.Component {
 
+    _retrieveKey = async (key) => {
+        try {
+            const value = await AsyncStorage.getItem(key);
+            if (value === null) {
+                console.log("got nothing on key!");
+                console.log(value);
+                return undefined
+            }
+            this.setState({access_key: value})
+        } catch (error) {
+            console.log(error)
+        }
+    };
+
 
     constructor(props) {
         super(props);
         this.state = {
-            currentPosition: [1, 5],
+            currentPosition: [-73.98330688476561, 40.76975180901395],
+            currentDistance: 0,
+            access_key: undefined
         };
         requestPermission().then(r => {
             if (r === false) {
@@ -39,24 +59,52 @@ export class GameScreen extends React.Component {
         }); //TODO: check if this is reliable and works on multiple relogins
 
         this.updateUserPosition = this.updateUserPosition.bind(this)
-        // this._retrieveKey("refresh_key")
     }
 
     componentDidMount() {
         MapboxGL.setTelemetryEnabled(false);
         this.updateUserPosition();
+        this._retrieveKey("access_key")
+        console.log(this.state.access_key);
     }
+
 
     updateUserPosition() {
         // Rather use this position due to the accuracy compared to MapBox
         Geolocation.getCurrentPosition(info => {
             let lat = info["coords"]["latitude"];
             let long = info["coords"]["longitude"];
-            this.setState({currentPosition: [long, lat]}, function () {
-                console.log(this.state.currentPosition);
-            });
-        });
 
+            let new_distance = distance(lat, long, this.state.currentPosition[0], this.state.currentPosition[1]);
+            let abs_diff = Math.abs(new_distance - this.state.currentDistance);
+            if (abs_diff >= 0) {
+
+                axiosConfig.get('/services/hello/', {headers: {"Authorization: ": "Bearer " + this.state.access_key}}).then(response => {
+                    console.log(response)
+                }).catch(error => {
+                    console.log(error)
+                });
+
+                // axiosConfig.post('/services/create_user_position/', {
+                //     headers: {"Authorization": "Bearer " + this._retrieveKey("access_key") },
+                //     data: {
+                //         "username": "mn",
+                //         "latitude": lat,
+                //         "longitude": long
+                //     }
+                // })
+                //     .then(response => {
+                //         console.log(response)
+                //     })
+                //     .catch(error => {
+                //         console.log(error)
+                //     });
+
+                this.setState({currentPosition: [long, lat], currentDistance: new_distance}, function () {
+                    console.log("Absolute difference between new and old position: " + abs_diff);
+                });
+            }
+        });
     };
 
     render() {
@@ -80,10 +128,11 @@ export class GameScreen extends React.Component {
                     <MapboxGL.PointAnnotation id="User" coordinate={this.state.currentPosition}>
                         <View style={styles.circle_out}>
                             <View style={styles.circle_in}>
-
+                                {/*// TODO: make sure the circle scales according to the real world shape of the radius!*/}
                             </View>
                         </View>
                     </MapboxGL.PointAnnotation>
+
 
                 </MapboxGL.MapView>
 
@@ -134,32 +183,3 @@ const styles = StyleSheet.create({
         transform: [{scale: 0.6}]
     }
 });
-
-
-//     _retrieveKey = async (key) => {
-//         try {
-//             const value = await AsyncStorage.getItem(key);
-//             if (value !== null) {
-//                 // We have data!!
-//                 console.log(value);
-//             } else {
-//                 console.log("got nothing!")
-//             }
-//         } catch (error) {
-//             console.log(error)
-//         }
-//     };
-
-// renderAnnotations() {
-//     return (
-//         <MapboxGL.PointAnnotation
-//             key="pointAnnotation"
-//             id="pointAnnotation"
-//             coordinate={this.state.initialCoords}>
-//             <View style={styles.annotationContainer}>
-//                 <View style={styles.annotationFill} />
-//             </View>
-//             <MapboxGL.Callout title="Your Location" />
-//         </MapboxGL.PointAnnotation>
-//     );
-// }

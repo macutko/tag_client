@@ -19,25 +19,7 @@ export default class App extends React.Component {
         };
     }
 
-    _retrieveKey = async (key) => {
-        try {
-            const value = await AsyncStorage.getItem(key);
-            if (value !== null) {
-                // We have data!!
-                console.log(value);
-            }
-        } catch (error) {
-            // Error retrieving data
-        }
-    };
-
     componentDidMount() {
-        try{
-            console.log("This is where we check for valid token");
-            this._retrieveKey("refresh_key")
-        } catch (error){
-            console.log(error)
-        }
         AppState.addEventListener('change', this._handleAppStateChange);
     }
 
