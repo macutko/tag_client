@@ -6,6 +6,7 @@ import Geolocation from '@react-native-community/geolocation';
 import distance from "../constants/distance";
 import axiosConfig from "../constants/axiosConfig";
 import AsyncStorage from '@react-native-community/async-storage';
+import {acc} from "react-native-reanimated";
 
 MapboxGL.setAccessToken('pk.eyJ1IjoibWFjdXRrbyIsImEiOiJjazlmbTgzbXAwY25tM2V0MDJ0eHgxbTBwIn0.np9dHqzUS0HEKSlbejOlbQ');
 
@@ -30,15 +31,16 @@ const requestPermission = async () => {
 
 export class GameScreen extends React.Component {
 
-    _retrieveKey = async (key) => {
+    _retrieveKeys = async () => {
         try {
-            const value = await AsyncStorage.getItem(key);
-            if (value === null) {
+            const access = await AsyncStorage.getItem("access_key");
+            const refresh = await AsyncStorage.getItem("refresh_key");
+            if ((access === null) || (refresh === null)) {
                 console.log("got nothing on key!");
-                console.log(value);
-                return undefined
+                console.log(access);
+                console.log(refresh);
             }
-            this.setState({access_key: value})
+            this.setState({access_key: access, refresh_key: refresh})
         } catch (error) {
             console.log(error)
         }
@@ -50,7 +52,8 @@ export class GameScreen extends React.Component {
         this.state = {
             currentPosition: [-73.98330688476561, 40.76975180901395],
             currentDistance: 0,
-            access_key: undefined
+            access_key: undefined,
+            refresh_key: undefined,
         };
         requestPermission().then(r => {
             if (r === false) {
@@ -64,10 +67,8 @@ export class GameScreen extends React.Component {
     componentDidMount() {
         MapboxGL.setTelemetryEnabled(false);
         this.updateUserPosition();
-        this._retrieveKey("access_key")
-        console.log(this.state.access_key);
+        this._retrieveKeys();
     }
-
 
     updateUserPosition() {
         // Rather use this position due to the accuracy compared to MapBox
@@ -77,28 +78,23 @@ export class GameScreen extends React.Component {
 
             let new_distance = distance(lat, long, this.state.currentPosition[0], this.state.currentPosition[1]);
             let abs_diff = Math.abs(new_distance - this.state.currentDistance);
-            if (abs_diff >= 0) {
+            if (abs_diff >= 0.1) {
 
-                axiosConfig.get('/services/hello/', {headers: {"Authorization: ": "Bearer " + this.state.access_key}}).then(response => {
+                console.log(lat)
+                console.log(long)
+                console.log(this.state.access_key)
+                axiosConfig.post('/services/create_user_position/', {
+                    "username": "mn",
+                    "latitude": lat,
+                    "longitude": long
+                }, {
+                    headers: {"Authorization": "JWT " + this.state.access_key}
+                }).then(response => {
                     console.log(response)
                 }).catch(error => {
                     console.log(error)
                 });
 
-                // axiosConfig.post('/services/create_user_position/', {
-                //     headers: {"Authorization": "Bearer " + this._retrieveKey("access_key") },
-                //     data: {
-                //         "username": "mn",
-                //         "latitude": lat,
-                //         "longitude": long
-                //     }
-                // })
-                //     .then(response => {
-                //         console.log(response)
-                //     })
-                //     .catch(error => {
-                //         console.log(error)
-                //     });
 
                 this.setState({currentPosition: [long, lat], currentDistance: new_distance}, function () {
                     console.log("Absolute difference between new and old position: " + abs_diff);
