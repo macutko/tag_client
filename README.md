@@ -25,7 +25,7 @@ Afterwards you need to run AVD manually (e.g. in Linux you will go to folder `/h
 stored by default, execute `./emulator -list-avds` to check which AVDs you have installed and start one of them - in my case I execute 
 `./emulator -avd Nexus_5_API_29`)
 
-If your AVD is running (it is the same as you connect your physical device and PC with USB), do the same steps as in **Physical device** section
+If your AVD is running (it is the same as you connect your physical device and PC with USB), do the same steps as in **Physical device - Android** section
 
 **iOS:** Haven't tried yet
 
