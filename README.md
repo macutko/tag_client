@@ -29,6 +29,14 @@ If your AVD is running (it is the same as you connect your physical device and P
 
 `iOS: ` Haven't tried yet
 
+## Tips
+### Debugging 
+
+The simplest way of debugging code is to use Chrome. You don’t need to install any other apps. 
+On Android emulator, or shake real devices, you will see the in-app developer menu. Tap `Debug JS Remotely` or `Debug`. 
+The Chrome debugger will be opened automatically. You still need to open Developer Tools in Chrome manually (by pressing Ctrl+Shift+J in Linux). 
+Open source files in the Sources tab, you can set breakpoints here. More details [here](https://stackoverflow.com/a/55965037)
+
 ## Troubleshooting:
 
 ### No server requests work 
