@@ -3,7 +3,7 @@
 ## Physical device 
 
 
-`Android:` If you have android physical device, connect device with PC by USB and do the following steps:
+**Android:** If you have android physical device, connect device with PC by USB and do the following steps:
 
 1) execute `npm install`
 1) run `npm start` in one terminal
@@ -12,10 +12,10 @@
 If your device is plugged in, this should push the app to the device and start the debugging.
 The debugging will start showing in the window you ran `npm start` 
 
-`iOS:` Haven't tried yet.
+**iOS:** Haven't tried yet.
 
 ## Virtual Device
-`Android: ` 
+**Android:** 
 If you want to develop or run this react-native app on AVD - Android Virtual Device - do the following steps (tested on Linux Ubuntu 20.04 LTS):
 1) Do proper Android development setup. Follow steps [here](https://reactnative.dev/docs/environment-setup) in section  `React Native CLI Quickstart`
 1) check whether `android/gradlew` is executable. If not, go gto `android` folder and execute `chmod 755 gradlew`
@@ -27,7 +27,7 @@ stored by default, execute `./emulator -list-avds` to check which AVDs you have 
 
 If your AVD is running (it is the same as you connect your physical device and PC with USB), do the same steps as in **Physical device** section
 
-`iOS: ` Haven't tried yet
+**iOS:** Haven't tried yet
 
 ## Tips
 ### Debugging 
