@@ -21,7 +21,11 @@ If you want to develop or run this react-native app on AVD - Android Virtual Dev
 1) check whether `android/gradlew` is executable. If not, go gto `android` folder and execute `chmod 755 gradlew`
 1) go to `android` folder, create `local.properties` file and add this line `sdk.dir = /home/USERNAME/Android/Sdk` where USERNAME is your linux username
 
-Afterwards do the same steps as in **Physical device** section
+Afterwards you need to run AVD manually (e.g. in Linux you will go to folder `/home/USERNAME/Android/Sdk/emulator` where Android sdk is
+stored by default, execute `./emulator -list-avds` to check which AVDs you have installed and start one of them - in my case I execute 
+`./emulator -avd Nexus_5_API_29`)
+
+If your AVD is running (it is the same as you connect your physical device and PC with USB), do the same steps as in **Physical device** section
 
 `iOS: ` Haven't tried yet
 
