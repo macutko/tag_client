@@ -44,7 +44,7 @@ export class SignUpForm extends React.Component {
     };
 
     submitForm = () => {
-        axiosConfig.post('/services/create_user/', {
+        axiosConfig.post('/users/register/', {
             first_name: this.state.first_name,
             last_name: this.state.last_name,
             email: this.state.email,
@@ -52,10 +52,9 @@ export class SignUpForm extends React.Component {
             password: this.state.password,
         })
             .then(response => {
-                this._storeData("access_key", response.data.token.access);
-                this._storeData("refresh_key", response.data.token.refresh);
+                this._storeData("token", response.data.token);
             })
-            .catch(error =>  {
+            .catch(error => {
                 console.log(error);
             });
     };

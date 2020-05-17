@@ -84,7 +84,6 @@ export class GameScreen extends React.Component {
                 console.log(long)
                 console.log(this.state.access_key)
                 axiosConfig.post('/services/create_user_position/', {
-                    "username": "mn",
                     "latitude": lat,
                     "longitude": long
                 }, {

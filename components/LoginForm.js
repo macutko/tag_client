@@ -38,20 +38,20 @@ export class LoginForm extends React.Component {
     };
 
     submitForm = () => {
-        axiosConfig.post('/services/api/token/', {
+        axiosConfig.post('/users/authenticate', {
             username: this.state.username,
             password: this.state.password,
         })
             .then(response => {
                 // TODO: if logged in - got to game Dashboard
                 console.log("Logged in!");
-                this._storeData("access_key", response.data.access);
-                this._storeData("refresh_key", response.data.refresh);
+                this._storeData("token", response.data.token);
                 console.log(this.props);
                 this.props.login()
                 // TODO: save token as well and set the timer to refresh it
             })
             .catch(error => {
+                console.log(error);
                 if (error.response.status === 401){
                     console.log("User not registered") // TODO display to user!
                 }
