@@ -1,15 +1,41 @@
 # How to start the project:
 
-You'll need either a physical or virtual device. I (Matus) am using a physical Android device.
-Others please update if there are any differences. 
+## Physical device 
 
-1) Pull the repo
-1) npm install
+
+**Android:** If you have android physical device, connect device with PC by USB and do the following steps:
+
+1) execute `npm install`
 1) run `npm start` in one terminal
-1) run `react-native run-android` in another (alternatively `run-ios`)
+1) run `react-native run-android` in another terminal
 
 If your device is plugged in, this should push the app to the device and start the debugging.
 The debugging will start showing in the window you ran `npm start` 
+
+**iOS:** Haven't tried yet.
+
+## Virtual Device
+**Android:** 
+If you want to develop or run this react-native app on AVD - Android Virtual Device - do the following steps (tested on Linux Ubuntu 20.04 LTS):
+1) Do proper Android development setup. Follow steps [here](https://reactnative.dev/docs/environment-setup) in section  `React Native CLI Quickstart`
+1) check whether `android/gradlew` is executable. If not, go gto `android` folder and execute `chmod 755 gradlew`
+1) go to `android` folder, create `local.properties` file and add this line `sdk.dir = /home/USERNAME/Android/Sdk` where USERNAME is your linux username
+
+Afterwards you need to run AVD manually (e.g. in Linux you will go to folder `/home/USERNAME/Android/Sdk/emulator` where Android sdk is
+stored by default, execute `./emulator -list-avds` to check which AVDs you have installed and start one of them - in my case I execute 
+`./emulator -avd Nexus_5_API_29`)
+
+If your AVD is running (it is the same as you connect your physical device and PC with USB), do the same steps as in **Physical device - Android** section
+
+**iOS:** Haven't tried yet
+
+## Tips
+### Debugging 
+
+The simplest way of debugging code is to use Chrome. You don’t need to install any other apps. 
+On Android emulator, or shake real devices, you will see the in-app developer menu. Tap `Debug JS Remotely` or `Debug`. 
+The Chrome debugger will be opened automatically. You still need to open Developer Tools in Chrome manually (by pressing Ctrl+Shift+J in Linux). 
+Open source files in the Sources tab, you can set breakpoints here. More details [here](https://stackoverflow.com/a/55965037)
 
 ## Troubleshooting:
 
