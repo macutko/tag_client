@@ -12,15 +12,17 @@ export class LoginForm extends React.Component {
             isVisible: false,
         }
     }
+
     onChangeText = (text, name) => {
         this.setState({
             [name]: text.toLowerCase()
         });
     };
 
-    _storeData = async (key,value) => {
+    _storeData = async (key, value) => {
         try {
             await AsyncStorage.setItem(key, value);
+            console.log(value);
         } catch (error) {
             console.log("Error saving data!!!")
         }
@@ -46,16 +48,14 @@ export class LoginForm extends React.Component {
                 // TODO: if logged in - got to game Dashboard
                 console.log("Logged in!");
                 this._storeData("token", response.data.token);
-                console.log(this.props);
                 this.props.login()
                 // TODO: save token as well and set the timer to refresh it
             })
             .catch(error => {
                 console.log(error);
-                if (error.response.status === 401){
+                if (error.response.status === 401) {
                     console.log("User not registered") // TODO display to user!
-                }
-                else{
+                } else {
                     console.log("Havent accounted for this error code") // TODO: handle more error codes
                 }
             });

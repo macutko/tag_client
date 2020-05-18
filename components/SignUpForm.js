@@ -44,15 +44,29 @@ export class SignUpForm extends React.Component {
     };
 
     submitForm = () => {
-        axiosConfig.post('/users/register/', {
-            first_name: this.state.first_name,
-            last_name: this.state.last_name,
+        axiosConfig.post('/users/register', {
+            firstName: this.state.first_name,
+            lastName: this.state.last_name,
             email: this.state.email,
             username: this.state.username,
             password: this.state.password,
         })
             .then(response => {
-                this._storeData("token", response.data.token);
+                this._storeData("token", response.data.userDetails.token);
+
+                axiosConfig.post('/location/create', {
+                    "latitude": 0,
+                    "longitude": 0
+                }, {
+                    headers: {"Authorization": "Bearer " + response.data.userDetails.token}
+                }).then(response => {
+                    console.log(response)
+                }).catch(error => {
+                    console.log(error)
+                });
+
+
+                // TODO: if succesful redirect
             })
             .catch(error => {
                 console.log(error);
