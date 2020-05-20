@@ -16,7 +16,6 @@ const requestPermission = async () => {
             PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION, PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION]
         );
         if (granted["android.permission.ACCESS_COARSE_LOCATION"] === "granted" && granted["android.permission.ACCESS_FINE_LOCATION"] === "granted") {
-            console.log("You can use the location");
             return true;
         } else {
             console.log("Location permission denied");
@@ -33,14 +32,13 @@ export class GameScreen extends React.Component {
 
     _retrieveKeys = async () => {
         try {
-            const access = await AsyncStorage.getItem("access_key");
-            const refresh = await AsyncStorage.getItem("refresh_key");
-            if ((access === null) || (refresh === null)) {
-                console.log("got nothing on key!");
-                console.log(access);
-                console.log(refresh);
+            const token = await AsyncStorage.getItem("token");
+            if (token === undefined) {
+                console.log("got nothing on token!");
+                console.log(token);
             }
-            this.setState({access_key: access, refresh_key: refresh})
+            console.log(token);
+            this.setState({token: token})
         } catch (error) {
             console.log(error)
         }
@@ -52,8 +50,7 @@ export class GameScreen extends React.Component {
         this.state = {
             currentPosition: [-73.98330688476561, 40.76975180901395],
             currentDistance: 0,
-            access_key: undefined,
-            refresh_key: undefined,
+            token: undefined
         };
         requestPermission().then(r => {
             if (r === false) {
@@ -80,15 +77,14 @@ export class GameScreen extends React.Component {
             let abs_diff = Math.abs(new_distance - this.state.currentDistance);
             if (abs_diff >= 0.1) {
 
-                console.log(lat)
-                console.log(long)
-                console.log(this.state.access_key)
-                axiosConfig.post('/services/create_user_position/', {
-                    "username": "mn",
+                console.log(lat);
+                console.log(long);
+                console.log(this.state.token);
+                axiosConfig.put('/location/update', {
                     "latitude": lat,
                     "longitude": long
                 }, {
-                    headers: {"Authorization": "JWT " + this.state.access_key}
+                    headers: {"Authorization": "Bearer " + this.state.token}
                 }).then(response => {
                     console.log(response)
                 }).catch(error => {

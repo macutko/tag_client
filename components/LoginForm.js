@@ -12,15 +12,17 @@ export class LoginForm extends React.Component {
             isVisible: false,
         }
     }
+
     onChangeText = (text, name) => {
         this.setState({
             [name]: text
         });
     };
 
-    _storeData = async (key,value) => {
+    _storeData = async (key, value) => {
         try {
             await AsyncStorage.setItem(key, value);
+            console.log(value);
         } catch (error) {
             console.log("Error saving data!!!")
         }
@@ -38,24 +40,22 @@ export class LoginForm extends React.Component {
     };
 
     submitForm = () => {
-        axiosConfig.post('/services/api/token/', {
+        axiosConfig.post('/users/authenticate', {
             username: this.state.username,
             password: this.state.password,
         })
             .then(response => {
                 // TODO: if logged in - got to game Dashboard
                 console.log("Logged in!");
-                this._storeData("access_key", response.data.access);
-                this._storeData("refresh_key", response.data.refresh);
-                console.log(this.props);
+                this._storeData("token", response.data.token);
                 this.props.login()
                 // TODO: save token as well and set the timer to refresh it
             })
             .catch(error => {
-                if (error.response.status === 401){
+                console.log(error);
+                if (error.response.status === 401) {
                     console.log("User not registered") // TODO display to user!
-                }
-                else{
+                } else {
                     console.log("Havent accounted for this error code") // TODO: handle more error codes
                 }
             });
