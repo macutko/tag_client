@@ -14,7 +14,7 @@ export class LoginForm extends React.Component {
     }
     onChangeText = (text, name) => {
         this.setState({
-            [name]: text.toLowerCase()
+            [name]: text
         });
     };
 
@@ -80,7 +80,7 @@ export class LoginForm extends React.Component {
                        textContentType={"password"}
                        password={true}
                 />
-                <Button containerStyle={{width: '75%'}} title="Login In" type="outline" raised={true}
+                <Button containerStyle={{width: '75%'}} title="Log In" type="outline" raised={true}
                         onPress={() => this.submitForm()}
                 />
 
