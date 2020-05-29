@@ -6,7 +6,8 @@ import Geolocation from '@react-native-community/geolocation';
 import distance from "../constants/distance";
 import axiosConfig from "../constants/axiosConfig";
 import AsyncStorage from '@react-native-community/async-storage';
-import {acc} from "react-native-reanimated";
+import io from 'socket.io-client';
+import config from "../constants/config";
 
 MapboxGL.setAccessToken('pk.eyJ1IjoibWFjdXRrbyIsImEiOiJjazlmbTgzbXAwY25tM2V0MDJ0eHgxbTBwIn0.np9dHqzUS0HEKSlbejOlbQ');
 
@@ -29,6 +30,10 @@ const requestPermission = async () => {
 
 
 export class GameScreen extends React.Component {
+    componentWillUnmount() {
+        // this.state.socket_obj.close()
+        console.log("should close socket")
+    }
 
     _retrieveKeys = async () => {
         try {
@@ -37,7 +42,6 @@ export class GameScreen extends React.Component {
                 console.log("got nothing on token!");
                 console.log(token);
             }
-            console.log(token);
             this.setState({token: token})
         } catch (error) {
             console.log(error)
@@ -50,7 +54,8 @@ export class GameScreen extends React.Component {
         this.state = {
             currentPosition: [-73.98330688476561, 40.76975180901395],
             currentDistance: 0,
-            token: undefined
+            token: undefined,
+            socket_obj: undefined
         };
         requestPermission().then(r => {
             if (r === false) {
@@ -63,8 +68,26 @@ export class GameScreen extends React.Component {
 
     componentDidMount() {
         MapboxGL.setTelemetryEnabled(false);
-        this.updateUserPosition();
         this._retrieveKeys();
+        this.updateUserPosition();
+
+        const socket = io.connect(config.baseURL);
+            socket.on('connect', () => {
+            socket
+                .emit('authenticate', {token: this.state.token}) //send the jwt
+                .on('authenticated', () => {
+                    console.log("got here")
+                })
+                .on('unauthorized', (msg) => {
+                    console.log(`unauthorized: ${JSON.stringify(msg.data)}`);
+                    throw new Error(msg.data.type);
+                })
+        });
+
+        this.setState({socket: socket});
+    }
+    componentWillUnmout(){
+        this.state.socket.disconnect();
     }
 
     updateUserPosition() {
@@ -76,22 +99,16 @@ export class GameScreen extends React.Component {
             let new_distance = distance(lat, long, this.state.currentPosition[0], this.state.currentPosition[1]);
             let abs_diff = Math.abs(new_distance - this.state.currentDistance);
             if (abs_diff >= 0.1) {
-
-                console.log(lat);
-                console.log(long);
-                console.log(this.state.token);
                 axiosConfig.put('/location/update', {
                     "latitude": lat,
                     "longitude": long
                 }, {
                     headers: {"Authorization": "Bearer " + this.state.token}
                 }).then(response => {
-                    console.log(response)
+
                 }).catch(error => {
                     console.log(error)
                 });
-
-
                 this.setState({currentPosition: [long, lat], currentDistance: new_distance}, function () {
                     console.log("Absolute difference between new and old position: " + abs_diff);
                 });
