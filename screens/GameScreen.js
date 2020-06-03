@@ -31,9 +31,30 @@ const requestPermission = async () => {
 
 export class GameScreen extends React.Component {
     componentWillUnmount() {
-        // this.state.socket_obj.close()
-        console.log("should close socket")
+        console.log("Disconneting");
+        this.socket.emit('terminate');
+        this.socket.disconnect();
     }
+
+    _updateUserPosition() {
+        // Rather use this position due to the accuracy compared to MapBox
+        Geolocation.getCurrentPosition(info => {
+            let lat = info["coords"]["latitude"];
+            let long = info["coords"]["longitude"];
+
+            let new_distance = distance(lat, long, this.state.currentPosition[0], this.state.currentPosition[1]);
+            let abs_diff = Math.abs(new_distance - this.state.currentDistance);
+            if (abs_diff >= 0.0) {
+                this.socket.emit('position_changed', {
+                    "latitude": lat,
+                    "longitude": long
+                })
+                this.setState({currentPosition: [long, lat], currentDistance: new_distance}, function () {
+                    console.log("Absolute difference between new and old position: " + abs_diff);
+                });
+            }
+        });
+    };
 
     _retrieveKeys = async () => {
         try {
@@ -42,7 +63,7 @@ export class GameScreen extends React.Component {
                 console.log("got nothing on token!");
                 console.log(token);
             }
-            this.setState({token: token})
+            return token
         } catch (error) {
             console.log(error)
         }
@@ -55,7 +76,7 @@ export class GameScreen extends React.Component {
             currentPosition: [-73.98330688476561, 40.76975180901395],
             currentDistance: 0,
             token: undefined,
-            socket_obj: undefined
+            users: {},
         };
         requestPermission().then(r => {
             if (r === false) {
@@ -63,60 +84,54 @@ export class GameScreen extends React.Component {
             }
         }); //TODO: check if this is reliable and works on multiple relogins
 
-        this.updateUserPosition = this.updateUserPosition.bind(this)
+        this._updateUserPosition = this._updateUserPosition.bind(this)
     }
 
     componentDidMount() {
         MapboxGL.setTelemetryEnabled(false);
-        this._retrieveKeys();
-        this.updateUserPosition();
+        this._retrieveKeys().then(r => this.setState({token: r}));
+        this._updateUserPosition();
 
-        const socket = io.connect(config.baseURL);
-            socket.on('connect', () => {
-            socket
-                .emit('authenticate', {token: this.state.token}) //send the jwt
+        this.socket = io.connect(config.baseURL, {'forceNew': true});
+        this.socket.on('connect', socket => {
+            this.socket
                 .on('authenticated', () => {
-                    console.log("got here")
+                    console.log("Authorized to PLAY!!!")
                 })
-                .on('unauthorized', (msg) => {
-                    console.log(`unauthorized: ${JSON.stringify(msg.data)}`);
-                    throw new Error(msg.data.type);
+                .emit('authenticate', {token: this.state.token})
+                .on('position_update', (data) => {
+                    console.log(JSON.stringify(data))
+                    this._add_user(data)
                 })
         });
-
-        this.setState({socket: socket});
-    }
-    componentWillUnmout(){
-        this.state.socket.disconnect();
     }
 
-    updateUserPosition() {
-        // Rather use this position due to the accuracy compared to MapBox
-        Geolocation.getCurrentPosition(info => {
-            let lat = info["coords"]["latitude"];
-            let long = info["coords"]["longitude"];
 
-            let new_distance = distance(lat, long, this.state.currentPosition[0], this.state.currentPosition[1]);
-            let abs_diff = Math.abs(new_distance - this.state.currentDistance);
-            if (abs_diff >= 0.1) {
-                axiosConfig.put('/location/update', {
-                    "latitude": lat,
-                    "longitude": long
-                }, {
-                    headers: {"Authorization": "Bearer " + this.state.token}
-                }).then(response => {
-
-                }).catch(error => {
-                    console.log(error)
-                });
-                this.setState({currentPosition: [long, lat], currentDistance: new_distance}, function () {
-                    console.log("Absolute difference between new and old position: " + abs_diff);
-                });
-            }
-        });
-    };
+    _add_user(data) {
+        this.state.users[data.uid] = [data.lat,data.long]
+        this.setState({users: this.state.users})
+        console.log(this.state.users)
+    }
 
     render() {
+        let other_users = [];
+        let middle =  () => {
+            let index = 0
+            for (let uid in this.state.users) {
+                other_users.push(
+                    <MapboxGL.PointAnnotation key={index} id={uid} coordinate={this.state.users[uid]}>
+                        <View key={index+1} style={styles.circle_out}>
+                            <View key={index+2} style={styles.circle_in}>
+                                {/*// TODO: make sure the circle scales according to the real world shape of the radius!*/}
+                            </View>
+                        </View>
+                    </MapboxGL.PointAnnotation>
+                )
+                index=index+3;
+            }
+        }
+        console.log("here");
+        middle();
         return (
             <View style={styles.container}>
                 <MapboxGL.MapView
@@ -126,10 +141,10 @@ export class GameScreen extends React.Component {
                     compassEnabled={true}
                     compassViewPosition={1}
                     attributionEnabled={false}
-                    onUserLocationUpdate={this.updateUserPosition}
+                    onUserLocationUpdate={this._updateUserPosition}
                 >
                     <MapboxGL.UserLocation visible={false}
-                                           showsUserHeadingIndicator={true} onUpdate={this.updateUserPosition}/>
+                                           showsUserHeadingIndicator={true} onUpdate={this._updateUserPosition}/>
                     <MapboxGL.Camera zoomLevel={20} defaultSettings={{
                         centerCoordinate: this.state.currentPosition,
                         zoomLevel: 2,
@@ -141,6 +156,8 @@ export class GameScreen extends React.Component {
                             </View>
                         </View>
                     </MapboxGL.PointAnnotation>
+
+                    {other_users}
 
 
                 </MapboxGL.MapView>
