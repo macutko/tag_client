@@ -6,7 +6,6 @@ import Geolocation from '@react-native-community/geolocation';
 import distance from "../constants/distance";
 import axiosConfig from "../constants/axiosConfig";
 import AsyncStorage from '@react-native-community/async-storage';
-import {acc} from "react-native-reanimated";
 
 MapboxGL.setAccessToken('pk.eyJ1IjoibWFjdXRrbyIsImEiOiJjazlmbTgzbXAwY25tM2V0MDJ0eHgxbTBwIn0.np9dHqzUS0HEKSlbejOlbQ');
 
