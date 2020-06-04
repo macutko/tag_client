@@ -1,4 +1,5 @@
 import {StyleSheet, View} from 'react-native';
+import Text from 'react-native-elements';
 import * as React from 'react';
 import MapboxGL from "@react-native-mapbox-gl/maps";
 import {PermissionsAndroid} from 'react-native';
@@ -108,30 +109,24 @@ export class GameScreen extends React.Component {
 
 
     _add_user(data) {
-        this.state.users[data.uid] = [data.lat,data.long]
+        this.state.users[data.uid] = [ data.long, data.lat]
         this.setState({users: this.state.users})
         console.log(this.state.users)
     }
 
     render() {
-        let other_users = [];
-        let middle =  () => {
-            let index = 0
-            for (let uid in this.state.users) {
-                other_users.push(
-                    <MapboxGL.PointAnnotation key={index} id={uid} coordinate={this.state.users[uid]}>
-                        <View key={index+1} style={styles.circle_out}>
-                            <View key={index+2} style={styles.circle_in}>
-                                {/*// TODO: make sure the circle scales according to the real world shape of the radius!*/}
-                            </View>
-                        </View>
-                    </MapboxGL.PointAnnotation>
-                )
-                index=index+3;
-            }
-        }
-        console.log("here");
-        middle();
+        let other_users = Object.keys(this.state.users).map((key, index) => (
+            <View>
+            <MapboxGL.PointAnnotation key={index} id={key} coordinate={this.state.users[key]} style={{width:"100%"}}>
+                <View style={styles.circle_out}>
+                    <View style={styles.circle_in_users}>
+                        {/*// TODO: make sure the circle scales according to the real world shape of the radius!*/}
+                    </View>
+                </View>
+            </MapboxGL.PointAnnotation>
+
+            </View>
+        ))
         return (
             <View style={styles.container}>
                 <MapboxGL.MapView
@@ -174,6 +169,12 @@ const styles = StyleSheet.create({
         height: 10,
         borderRadius: 100 / 2,
         backgroundColor: 'rgba(50,50,255, 1)'
+    },
+    circle_in_users: {
+        width: 10,
+        height: 10,
+        borderRadius: 100 / 2,
+        backgroundColor: 'rgba(50,255,255, 1)'
     },
     circle_out: {
         alignItems: 'center',
