@@ -34,9 +34,9 @@ export class SignInScreen extends React.Component {
         }))
     };
 
-    handleLoggin = () => {
+    handleLoggin = (username) => {
         this.closeModal();
-        this.props.navigation.navigate('GameScreen');
+        this.props.navigation.navigate('GameScreen',{username: username});
     };
 
     render = () => {

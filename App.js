@@ -29,7 +29,6 @@ export default class App extends React.Component {
     _handleAppStateChange = (nextAppState) => {
         if (this.state.appState.match(/inactive|background/) && nextAppState === 'active') {
             console.log('App has come to the foreground!')
-            console.log(this._retrieveKey("refresh_key"))
         }
         this.setState({appState: nextAppState});
     };
