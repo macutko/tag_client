@@ -1,33 +1,16 @@
 import {StyleSheet, View} from 'react-native';
-import Text from 'react-native-elements';
 import * as React from 'react';
 import MapboxGL from "@react-native-mapbox-gl/maps";
-import {PermissionsAndroid} from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
 import distance from "../constants/distance";
-import axiosConfig from "../constants/axiosConfig";
-import AsyncStorage from '@react-native-community/async-storage';
 import io from 'socket.io-client';
 import config from "../constants/config";
+import {UserObject} from "../components/UserObject";
+import {CurrentUser} from "../components/CurrentUser";
 
-MapboxGL.setAccessToken('pk.eyJ1IjoibWFjdXRrbyIsImEiOiJjazlmbTgzbXAwY25tM2V0MDJ0eHgxbTBwIn0.np9dHqzUS0HEKSlbejOlbQ');
 
-const requestPermission = async () => {
-    try {
-        const granted = await PermissionsAndroid.requestMultiple([
-            PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION, PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION]
-        );
-        if (granted["android.permission.ACCESS_COARSE_LOCATION"] === "granted" && granted["android.permission.ACCESS_FINE_LOCATION"] === "granted") {
-            return true;
-        } else {
-            console.log("Location permission denied");
-            console.log(granted);
-            return false;
-        }
-    } catch (err) {
-        console.warn(err);
-    }
-};
+const util = require("../constants/utils")
+MapboxGL.setAccessToken(config.mapbox_key);
 
 
 export class GameScreen extends React.Component {
@@ -57,20 +40,6 @@ export class GameScreen extends React.Component {
         });
     };
 
-    _retrieveKeys = async () => {
-        try {
-            const token = await AsyncStorage.getItem("token");
-            if (token === undefined) {
-                console.log("got nothing on token!");
-                console.log(token);
-            }
-            return token
-        } catch (error) {
-            console.log(error)
-        }
-    };
-
-
     constructor(props) {
         super(props);
         this.state = {
@@ -79,7 +48,7 @@ export class GameScreen extends React.Component {
             token: undefined,
             users: {},
         };
-        requestPermission().then(r => {
+        util.requestPermission().then(r => {
             if (r === false) {
                 this.props.navigation.navigate('SignInScreen');
             }
@@ -90,7 +59,7 @@ export class GameScreen extends React.Component {
 
     componentDidMount() {
         MapboxGL.setTelemetryEnabled(false);
-        this._retrieveKeys().then(r => this.setState({token: r}));
+        util._retrieveKeys().then(r => this.setState({token: r}));
         this._updateUserPosition();
 
         this.socket = io.connect(config.baseURL, {'forceNew': true});
@@ -109,23 +78,14 @@ export class GameScreen extends React.Component {
 
 
     _add_user(data) {
-        this.state.users[data.uid] = [ data.long, data.lat]
+        this.state.users[data.uid] = [data.long, data.lat]
         this.setState({users: this.state.users})
         console.log(this.state.users)
     }
 
     render() {
         let other_users = Object.keys(this.state.users).map((key, index) => (
-            <View>
-            <MapboxGL.PointAnnotation key={index} id={key} coordinate={this.state.users[key]} style={{width:"100%"}}>
-                <View style={styles.circle_out}>
-                    <View style={styles.circle_in_users}>
-                        {/*// TODO: make sure the circle scales according to the real world shape of the radius!*/}
-                    </View>
-                </View>
-            </MapboxGL.PointAnnotation>
-
-            </View>
+            <UserObject key={index} id={key} coordinate={this.state.users[key]}/>
         ))
         return (
             <View style={styles.container}>
@@ -136,7 +96,6 @@ export class GameScreen extends React.Component {
                     compassEnabled={true}
                     compassViewPosition={1}
                     attributionEnabled={false}
-                    onUserLocationUpdate={this._updateUserPosition}
                 >
                     <MapboxGL.UserLocation visible={false}
                                            showsUserHeadingIndicator={true} onUpdate={this._updateUserPosition}/>
@@ -144,13 +103,8 @@ export class GameScreen extends React.Component {
                         centerCoordinate: this.state.currentPosition,
                         zoomLevel: 2,
                     }}/>
-                    <MapboxGL.PointAnnotation id="User" coordinate={this.state.currentPosition}>
-                        <View style={styles.circle_out}>
-                            <View style={styles.circle_in}>
-                                {/*// TODO: make sure the circle scales according to the real world shape of the radius!*/}
-                            </View>
-                        </View>
-                    </MapboxGL.PointAnnotation>
+
+                    <CurrentUser currentPosition={this.state.currentPosition}/>
 
                     {other_users}
 
@@ -164,28 +118,6 @@ export class GameScreen extends React.Component {
 }
 
 const styles = StyleSheet.create({
-    circle_in: {
-        width: 10,
-        height: 10,
-        borderRadius: 100 / 2,
-        backgroundColor: 'rgba(50,50,255, 1)'
-    },
-    circle_in_users: {
-        width: 10,
-        height: 10,
-        borderRadius: 100 / 2,
-        backgroundColor: 'rgba(50,255,255, 1)'
-    },
-    circle_out: {
-        alignItems: 'center',
-        flex: 1,
-        justifyContent: 'center',
-        opacity: 0.5,
-        width: 25,
-        height: 25,
-        borderRadius: 100 / 2,
-        backgroundColor: 'rgba(50,50,255, 0.4)'
-    },
     container: {
         flex: 1,
         padding: 1,
