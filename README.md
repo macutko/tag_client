@@ -40,7 +40,7 @@ Open source files in the Sources tab, you can set breakpoints here. More details
 ## Troubleshooting:
 
 ### No server requests work 
-Is your server running? Do you have the right `baseUrl` set in `axiosConfig.js`? Is your device able to access 
+Is your server running? Do you have the right `baseUrl` set in `connectionInstances.js`? Is your device able to access 
 that destination i.e. are you on the same network (LAN)
 
 ### I get errors with react-native <lib> but I haven't touched anything. 

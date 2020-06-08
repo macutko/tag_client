@@ -1,7 +1,7 @@
 import {View} from 'react-native';
 import * as React from 'react';
 import {Button, Input} from 'react-native-elements';
-import axiosConfig from '../constants/axiosConfig';
+import {axiosInstance} from '../constants/connectionInstances';
 import AsyncStorage from '@react-native-community/async-storage';
 import GLOBAL_VAR from '../constants/Global'
 import {CustomFieldValidator} from "../classes/validator/CustomFieldValidator";
@@ -42,7 +42,7 @@ export class SignUpForm extends React.Component {
     };
 
     submitForm = () => {
-        axiosConfig.post('/users/register', {
+        axiosInstance.post('/users/register', {
             firstName: this.state.firstname,
             lastName: this.state.lastname,
             email: this.state.email,
@@ -53,7 +53,7 @@ export class SignUpForm extends React.Component {
                 console.log("here")
                 this._storeData("token", response.data.userDetails.token);
 
-                axiosConfig.post('/location/create', {
+                axiosInstance.post('/location/create', {
                     "latitude": 0,
                     "longitude": 0
                 }, {
