@@ -3,24 +3,25 @@ import * as React from 'react';
 import MapboxGL from "@react-native-mapbox-gl/maps";
 import Geolocation from '@react-native-community/geolocation';
 import distance from "../constants/distance";
-import io from 'socket.io-client';
 import config from "../constants/config";
 import {UserObject} from "../components/UserObject";
 import {CurrentUser} from "../components/CurrentUser";
+import * as io from "socket.io-client";
 
 const util = require("../constants/utils")
 MapboxGL.setAccessToken(config.mapbox_key);
 
 
 export class GameScreen extends React.Component {
-    componentWillUnmount() {
+    componentWillUnmount = () => {
         console.log("Disconneting");
         this.socket.emit('terminate');
         this.socket.disconnect();
     }
 
-    _updateUserPosition() {
+    _updateUserPosition = () => {
         // Rather use this position due to the accuracy compared to MapBox
+
         Geolocation.getCurrentPosition(info => {
             let lat = info["coords"]["latitude"];
             let long = info["coords"]["longitude"];
@@ -56,7 +57,7 @@ export class GameScreen extends React.Component {
         this._updateUserPosition = this._updateUserPosition.bind(this)
     }
 
-    componentDidMount() {
+    componentDidMount = () => {
         MapboxGL.setTelemetryEnabled(false);
         util._retrieveKeys().then(r => this.setState({token: r}));
         this._updateUserPosition();
@@ -69,22 +70,21 @@ export class GameScreen extends React.Component {
                 })
                 .emit('authenticate', {token: this.state.token})
                 .on('position_update', (data) => {
-                    console.log(JSON.stringify(data))
                     this._add_user(data)
                 })
         });
     }
 
 
-    _add_user(data) {
-        this.state.users[data.uid] = [data.long, data.lat]
+    _add_user = (data) => {
+        this.state.users[data.userID] = {position: [data.long, data.lat], socketID: data.socketID}
         this.setState({users: this.state.users})
         console.log(this.state.users)
     }
 
     render() {
         let other_users = Object.keys(this.state.users).map((key, index) => (
-            <UserObject key={index} id={key} coordinate={this.state.users[key]}/>
+            <UserObject key={index} id={key} coordinate={this.state.users[key][position]}/>
         ))
         return (
             <View style={styles.container}>
@@ -104,6 +104,8 @@ export class GameScreen extends React.Component {
                     }}/>
 
                     <CurrentUser currentPosition={this.state.currentPosition}/>
+                    <UserObject id={"Dummy"} coordinate={[17.1661355, 48.169825]}
+                                player_location={this.state.currentPosition} socketID={"XXXXX"} s={this.socket}/>
 
                     {other_users}
 

@@ -1,9 +1,10 @@
 import axios from 'axios'
 import config from "./config";
-// Next we make an 'instance' of it
-const instance = axios.create({
-// .. where we make our configurations
+import io from "socket.io-client";
+
+const axiosInstance = axios.create({
     baseURL: config.baseURL,
 });
 
-export default instance;
+
+module.exports = {axiosInstance}

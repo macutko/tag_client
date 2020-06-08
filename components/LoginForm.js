@@ -1,7 +1,7 @@
 import {View} from 'react-native';
 import * as React from 'react';
 import {Button, Input} from "react-native-elements";
-import axiosConfig from "../constants/axiosConfig";
+import {axiosInstance} from "../constants/connectionInstances";
 import AsyncStorage from '@react-native-community/async-storage';
 
 export class LoginForm extends React.Component {
@@ -27,20 +27,9 @@ export class LoginForm extends React.Component {
             console.log("Error saving data!!!")
         }
     };
-    _retrieveKey = async (key) => {
-        try {
-            const value = await AsyncStorage.getItem(key);
-            if (value !== null) {
-                // We have data!!
-                console.log(value);
-            }
-        } catch (error) {
-            // Error retrieving data
-        }
-    };
 
     submitForm = () => {
-        axiosConfig.post('/users/authenticate', {
+        axiosInstance.post('/users/authenticate', {
             username: this.state.username,
             password: this.state.password,
         })
