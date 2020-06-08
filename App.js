@@ -4,10 +4,8 @@ import {StatusBar} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import {AppState} from 'react-native'
-import {SignInScreen} from "./screens/SignInScreen";
+import {WelcomeScreen} from "./screens/WelcomeScreen";
 import {GameScreen} from "./screens/GameScreen";
-import AsyncStorage from '@react-native-community/async-storage';
-// import {HomeScreen} from "./screens/HomeScreen";
 
 const Stack = createStackNavigator();
 
@@ -37,8 +35,8 @@ export default class App extends React.Component {
         return (
             <NavigationContainer>
                 <StatusBar hidden={true}/>
-                <Stack.Navigator screenOptions={{headerShown: false}}>
-                    <Stack.Screen name="SignInScreen" component={SignInScreen}/>
+                <Stack.Navigator screenOptions={{headerShown: false}} >
+                    <Stack.Screen name="WelcomeScreen" component={WelcomeScreen}/>
                     <Stack.Screen name="GameScreen" component={GameScreen}/>
                 </Stack.Navigator>
             </NavigationContainer>

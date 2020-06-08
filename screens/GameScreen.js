@@ -1,12 +1,15 @@
 import {StyleSheet, View} from 'react-native';
 import * as React from 'react';
 import MapboxGL from "@react-native-mapbox-gl/maps";
+import {PermissionsAndroid} from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
 import distance from "../constants/distance";
 import config from "../constants/config";
 import {UserObject} from "../components/UserObject";
 import {CurrentUser} from "../components/CurrentUser";
 import * as io from "socket.io-client";
+import axiosConfig from "../constants/axiosConfig";
+import AsyncStorage from '@react-native-community/async-storage';
 
 const util = require("../constants/utils")
 MapboxGL.setAccessToken(config.mapbox_key);
@@ -57,22 +60,29 @@ export class GameScreen extends React.Component {
         this._updateUserPosition = this._updateUserPosition.bind(this)
     }
 
+
     componentDidMount = () => {
         MapboxGL.setTelemetryEnabled(false);
-        util._retrieveKeys().then(r => this.setState({token: r}));
-        this._updateUserPosition();
+        util._retrieveKeys()
+            .then(() => {
+                this.updateUserPosition();
 
-        this.socket = io.connect(config.baseURL, {'forceNew': true});
-        this.socket.on('connect', socket => {
-            this.socket
-                .on('authenticated', () => {
-                    console.log("Authorized to PLAY!!!")
-                })
-                .emit('authenticate', {token: this.state.token})
-                .on('position_update', (data) => {
-                    this._add_user(data)
-                })
+                this.socket = io.connect(config.baseURL, {'forceNew': true});
+                this.socket.on('connect', socket => {
+                    this.socket
+                        .on('authenticated', () => {
+                            console.log("Authorized to PLAY!!!")
+                        })
+                        .emit('authenticate', {token: this.state.token})
+                        .on('position_update', (data) => {
+                            this._add_user(data)
+                        })
+                });
+
+            }).catch(error => {
+            console.log(error)
         });
+
     }
 
 
