@@ -1,15 +1,13 @@
 import {StyleSheet, View} from 'react-native';
 import * as React from 'react';
 import MapboxGL from "@react-native-mapbox-gl/maps";
-import {PermissionsAndroid} from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
 import distance from "../constants/distance";
 import config from "../constants/config";
 import {UserObject} from "../components/UserObject";
 import {CurrentUser} from "../components/CurrentUser";
 import * as io from "socket.io-client";
-import axiosConfig from "../constants/axiosConfig";
-import AsyncStorage from '@react-native-community/async-storage';
+
 
 const util = require("../constants/utils")
 MapboxGL.setAccessToken(config.mapbox_key);
