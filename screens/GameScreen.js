@@ -1,15 +1,13 @@
 import {StyleSheet, View} from 'react-native';
 import * as React from 'react';
 import MapboxGL from "@react-native-mapbox-gl/maps";
-import {PermissionsAndroid} from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
 import distance from "../constants/distance";
 import config from "../constants/config";
 import {UserObject} from "../components/UserObject";
 import {CurrentUser} from "../components/CurrentUser";
 import * as io from "socket.io-client";
-import axiosConfig from "../constants/axiosConfig";
-import AsyncStorage from '@react-native-community/async-storage';
+
 
 const util = require("../constants/utils")
 MapboxGL.setAccessToken(config.mapbox_key);
@@ -31,7 +29,7 @@ export class GameScreen extends React.Component {
 
             let new_distance = distance(lat, long, this.state.currentPosition[0], this.state.currentPosition[1]);
             let abs_diff = Math.abs(new_distance - this.state.currentDistance);
-            if (abs_diff >= 0.0) {
+            if (abs_diff >= 0.1) {
                 this.socket.emit('position_changed', {
                     "latitude": lat,
                     "longitude": long
@@ -64,21 +62,20 @@ export class GameScreen extends React.Component {
     componentDidMount = () => {
         MapboxGL.setTelemetryEnabled(false);
         util._retrieveKeys()
-            .then(() => {
-                this.updateUserPosition();
-
+            .then((token) => {
+                this.setState({token: token})
                 this.socket = io.connect(config.baseURL, {'forceNew': true});
                 this.socket.on('connect', socket => {
                     this.socket
                         .on('authenticated', () => {
                             console.log("Authorized to PLAY!!!")
                         })
-                        .emit('authenticate', {token: this.state.token})
+                        .emit('authenticate', {token: token})
                         .on('position_update', (data) => {
                             this._add_user(data)
                         })
                 });
-
+                this._updateUserPosition();
             }).catch(error => {
             console.log(error)
         });
@@ -94,8 +91,11 @@ export class GameScreen extends React.Component {
 
     render() {
         let other_users = Object.keys(this.state.users).map((key, index) => (
-            <UserObject key={index} id={key} coordinate={this.state.users[key][position]}/>
+            <UserObject key={index} id={key} coordinate={this.state.users[key].position}
+                        player_location={this.state.currentPosition} socketID={this.state.users[key].socketID}
+                        socket={this.socket}/>
         ))
+
         return (
             <View style={styles.container}>
                 <MapboxGL.MapView
@@ -113,10 +113,8 @@ export class GameScreen extends React.Component {
                         zoomLevel: 2,
                     }}/>
 
-                    <CurrentUser currentPosition={this.state.currentPosition}/>
-                    <UserObject id={"Dummy"} coordinate={[17.1661355, 48.169825]}
-                                player_location={this.state.currentPosition} socketID={"XXXXX"} s={this.socket}/>
 
+                    <CurrentUser currentPosition={this.state.currentPosition} socket={this.socket}/>
                     {other_users}
 
 

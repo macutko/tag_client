@@ -6,9 +6,19 @@ export class CurrentUser extends React.Component {
 
     constructor(props) {
         super(props);
+
+        // this.props.socket.on('give_me_your_position')
+        console.log(this)
+        // this.props.socket.on('give_me_your_position', (data) => {
+        //     console.log("here")
+        // })
     };
-    user_clicked() {
-        console.log("here")
+    componentDidMount = () => {
+        this.props.socket.on('give_me_your_position', (data) =>  )
+    }
+
+    user_clicked = () => {
+        console.log("Current user clicked")
     }
 
 

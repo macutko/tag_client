@@ -6,11 +6,10 @@ export class UserObject extends React.Component {
     constructor(props) {
         super(props);
         this.state = {}
-        this.socket = this.props.s
     }
 
     user_clicked = () => {
-        this.socket.emit('initiate_chase', {
+        this.props.socket.emit('initiate_chase', {
             user: this.props.id,
             playerLocation: this.props.player_location,
             socketID: this.props.socketID
