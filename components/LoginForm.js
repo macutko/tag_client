@@ -15,7 +15,7 @@ export class LoginForm extends React.Component {
 
     onChangeText = (text, name) => {
         this.setState({
-            [name]: text.toLowerCase()
+            [name]: text
         });
     };
 
@@ -48,7 +48,7 @@ export class LoginForm extends React.Component {
                 // TODO: if logged in - got to game Dashboard
                 console.log("Logged in!");
                 this._storeData("token", response.data.token);
-                this.props.login(this.state.username)
+                this.props.login()
                 // TODO: save token as well and set the timer to refresh it
             })
             .catch(error => {
@@ -80,7 +80,7 @@ export class LoginForm extends React.Component {
                        textContentType={"password"}
                        password={true}
                 />
-                <Button containerStyle={{width: '75%'}} title="Login In" type="outline" raised={true}
+                <Button containerStyle={{width: '75%'}} title="Log In" type="outline" raised={true}
                         onPress={() => this.submitForm()}
                 />
 

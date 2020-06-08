@@ -3,6 +3,9 @@ import * as React from 'react';
 import {Button, Input} from 'react-native-elements';
 import axiosConfig from '../constants/axiosConfig';
 import AsyncStorage from '@react-native-community/async-storage';
+import GLOBAL_VAR from '../constants/Global'
+import {CustomFieldValidator} from "../classes/validator/CustomFieldValidator";
+import {CustomExistenceValidator} from "../classes/validator/CustomExistenceValidator";
 
 export class SignUpForm extends React.Component {
 
@@ -11,30 +14,25 @@ export class SignUpForm extends React.Component {
         this.state = {}
     };
 
+    onEndEditingAfter = (validation_obj) => {
+        this.setState(validation_obj)
+    }
 
-    validate_email = (text) => {
-        console.log(text);
-        let reg = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
-        if (reg.test(text) === false) {
-            console.log("Email is Not Correct");
-            this.setState({email: text});
-            return false;
+    onEndEditing = (field_name, event) => {
+        const text = event.nativeEvent.text
+        let validation_obj = CustomFieldValidator.validate(field_name, text)
+        if (validation_obj.isValid && (field_name === GLOBAL_VAR.FIELD_NAME.USERNAME || field_name === GLOBAL_VAR.FIELD_NAME.EMAIL)) {
+            CustomExistenceValidator.validate(field_name, text).then(existence_obj => {
+                validation_obj = {...validation_obj, ...existence_obj}
+                this.onEndEditingAfter(validation_obj)
+            }).catch(error => {
+                console.log(error)
+            })
         } else {
-            this.setState({email: text});
-            console.log("Email is Correct");
-            return true;
+            this.onEndEditingAfter(validation_obj)
         }
-    };
+    }
 
-    onChangeText = (text, name) => {
-        this.setState({
-            [name]: text.toLowerCase()
-        });
-        // TODO: use the validate function to check if the email entered is a valid type
-        // TODO: if name is username check if the username is still available
-        // TODO: password check strenght (might need to get the server involved)
-        // TODO: make the input text smaller
-    };
     _storeData = async (key, value) => {
         try {
             await AsyncStorage.setItem(key, value);
@@ -45,8 +43,8 @@ export class SignUpForm extends React.Component {
 
     submitForm = () => {
         axiosConfig.post('/users/register', {
-            firstName: this.state.first_name,
-            lastName: this.state.last_name,
+            firstName: this.state.firstname,
+            lastName: this.state.lastname,
             email: this.state.email,
             username: this.state.username,
             password: this.state.password,
@@ -62,12 +60,10 @@ export class SignUpForm extends React.Component {
                     headers: {"Authorization": "Bearer " + response.data.userDetails.token}
                 }).then(response => {
                     console.log(response)
+                    this.props.login();
                 }).catch(error => {
                     console.log(error)
                 });
-
-
-                // TODO: if succesful redirect
             })
             .catch(error => {
                 console.log(error);
@@ -81,32 +77,42 @@ export class SignUpForm extends React.Component {
 
                 <Input inputContainerStyle={{width: '75%'}}
                        placeholder='Email'
-                       onChangeText={text => this.onChangeText(text, "email")}
+                       onChangeText={text => this.setState({[GLOBAL_VAR.FIELD_NAME.EMAIL]: text})}
                        autoCompleteType={'email'}
+                       onEndEditing={(e) => this.onEndEditing(GLOBAL_VAR.FIELD_NAME.EMAIL, e)}
+                       errorMessage={this.state.emailError}
                 />
                 <Input inputContainerStyle={{width: '75%'}}
                        placeholder='First Name'
-                       onChangeText={text => this.onChangeText(text, "first_name")}
+                       onChangeText={text => this.setState({[GLOBAL_VAR.FIELD_NAME.FIRSTNAME]: text})}
                        autoCompleteType={'name'}
+                       onEndEditing={(e) => this.onEndEditing(GLOBAL_VAR.FIELD_NAME.FIRSTNAME, e)}
+                       errorMessage={this.state.firstnameError}
                 />
                 <Input inputContainerStyle={{width: '75%'}}
                        placeholder='Last Name'
-                       onChangeText={text => this.onChangeText(text, "last_name")}
+                       onChangeText={text => this.setState({[GLOBAL_VAR.FIELD_NAME.LASTNAME]: text})}
                        autoCompleteType={'name'}
+                       onEndEditing={(e) => this.onEndEditing(GLOBAL_VAR.FIELD_NAME.LASTNAME, e)}
+                       errorMessage={this.state.lastnameError}
                 />
                 <Input inputContainerStyle={{width: '75%'}}
                        placeholder='Username'
-                       onChangeText={text => this.onChangeText(text, "username")}
+                       onChangeText={text => this.setState({[GLOBAL_VAR.FIELD_NAME.USERNAME]: text})}
                        autoCompleteType={'username'}
                        textContentType={"username"}
+                       onEndEditing={(e) => this.onEndEditing(GLOBAL_VAR.FIELD_NAME.USERNAME, e)}
+                       errorMessage={this.state.usernameError}
                 />
                 <Input inputContainerStyle={{width: '75%'}}
                        placeholder='Password'
-                       onChangeText={text => this.onChangeText(text, "password")}
+                       onChangeText={text => this.setState({[GLOBAL_VAR.FIELD_NAME.PASSWORD]: text})}
                        autoCompleteType={'password'}
                        secureTextEntry={true}
                        textContentType={"newPassword"}
                        password={true}
+                       onEndEditing={(e) => this.onEndEditing(GLOBAL_VAR.FIELD_NAME.PASSWORD, e)}
+                       errorMessage={this.state.passwordError}
                 />
 
                 <Button containerStyle={{width: '75%'}} title="Create Account" type="outline" raised={true}
