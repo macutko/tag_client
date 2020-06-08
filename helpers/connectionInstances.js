@@ -1,6 +1,5 @@
 import axios from 'axios'
-import config from "./config";
-import io from "socket.io-client";
+import config from "../constants/config";
 
 const axiosInstance = axios.create({
     baseURL: config.baseURL,

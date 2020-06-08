@@ -2,7 +2,7 @@ import * as React from "react";
 import {StyleSheet, View} from "react-native";
 import MapboxGL from "@react-native-mapbox-gl/maps";
 
-export class CurrentUser extends React.Component {
+export class CurrentUserAnnotation extends React.Component {
 
     constructor(props) {
         super(props);

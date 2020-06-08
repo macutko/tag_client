@@ -1,11 +1,11 @@
 import {View} from 'react-native';
 import * as React from 'react';
 import {Button, Input} from 'react-native-elements';
-import {axiosInstance} from '../constants/connectionInstances';
+import {axiosInstance} from '../../helpers/connectionInstances';
 import AsyncStorage from '@react-native-community/async-storage';
-import GLOBAL_VAR from '../constants/Global'
-import {CustomFieldValidator} from "../classes/validator/CustomFieldValidator";
-import {CustomExistenceValidator} from "../classes/validator/CustomExistenceValidator";
+import GLOBAL_VAR from '../../constants/Global'
+import {CustomFieldValidator} from "../../helpers/validator/CustomFieldValidator";
+import {CustomExistenceValidator} from "../../helpers/validator/CustomExistenceValidator";
 
 export class SignUpForm extends React.Component {
 

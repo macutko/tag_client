@@ -1,17 +1,14 @@
 import {StyleSheet, View} from 'react-native';
 import * as React from 'react';
 import MapboxGL from "@react-native-mapbox-gl/maps";
-import {PermissionsAndroid} from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
-import distance from "../constants/distance";
 import config from "../constants/config";
-import {UserObject} from "../components/UserObject";
-import {CurrentUser} from "../components/CurrentUser";
+import {OtherUserAnnotation} from "../components/user/OtherUserAnnotation";
+import {CurrentUserAnnotation} from "../components/user/CurrentUserAnnotation";
 import * as io from "socket.io-client";
-import axiosConfig from "../constants/axiosConfig";
-import AsyncStorage from '@react-native-community/async-storage';
+import {distance} from "../helpers/utils";
 
-const util = require("../constants/utils")
+const util = require("../helpers/utils")
 MapboxGL.setAccessToken(config.mapbox_key);
 
 
@@ -65,7 +62,7 @@ export class GameScreen extends React.Component {
         MapboxGL.setTelemetryEnabled(false);
         util._retrieveKeys()
             .then(() => {
-                this.updateUserPosition();
+                this._updateUserPosition();
 
                 this.socket = io.connect(config.baseURL, {'forceNew': true});
                 this.socket.on('connect', socket => {
@@ -94,7 +91,7 @@ export class GameScreen extends React.Component {
 
     render() {
         let other_users = Object.keys(this.state.users).map((key, index) => (
-            <UserObject key={index} id={key} coordinate={this.state.users[key][position]}/>
+            <OtherUserAnnotation key={index} id={key} coordinate={this.state.users[key][position]}/>
         ))
         return (
             <View style={styles.container}>
@@ -113,9 +110,9 @@ export class GameScreen extends React.Component {
                         zoomLevel: 2,
                     }}/>
 
-                    <CurrentUser currentPosition={this.state.currentPosition}/>
-                    <UserObject id={"Dummy"} coordinate={[17.1661355, 48.169825]}
-                                player_location={this.state.currentPosition} socketID={"XXXXX"} s={this.socket}/>
+                    <CurrentUserAnnotation currentPosition={this.state.currentPosition}/>
+                    <OtherUserAnnotation id={"Dummy"} coordinate={[17.1661355, 48.169825]}
+                                         player_location={this.state.currentPosition} socketID={"XXXXX"} s={this.socket}/>
 
                     {other_users}
 
