@@ -38,6 +38,7 @@ export class SignUpForm extends React.Component {
             password: this.state.password,
         })
             .then(response => {
+                console.log("here")
                 this._storeData("token", response.data.userDetails.token);
 
                 axiosConfig.post('/location/create', {

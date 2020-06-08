@@ -28,15 +28,15 @@ export class WelcomeScreen extends React.Component {
     };
 
     closeModal = () => {
-        this.setState(state => ({
+        this.setState({
             showLogin: false,
             showSignUp: false,
-        }))
+        })
     };
 
-    handleLoggin = () => {
+    handleLoggin = (username) => {
         this.closeModal();
-        this.props.navigation.navigate('GameScreen');
+        this.props.navigation.navigate('GameScreen',{username: username});
     };
 
     render = () => {
