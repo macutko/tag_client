@@ -1,6 +1,6 @@
 import GLOBAL_VAR from '../../constants/Global'
 
-class ValidateStrategyFactory {
+class ValidateFieldStrategyFactory {
     constructor() {
     }
 
@@ -18,34 +18,38 @@ class ValidateStrategyFactory {
 }
 
 //abstract class
-class ValidateStrategy {
+class ValidateFieldStrategy {
     validateText = (text) => {};
 }
 
-class ValidateEmail  extends ValidateStrategy {
+class ValidateEmail  extends ValidateFieldStrategy {
     validateText = (text) => {
         let emailError = ""
+        let isValid = true
         let reg = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
         if (reg.test(text) === false) {
             emailError = "Email is not correct"
+            isValid = false
         }
-        return {emailError}
+        return {emailError, isValid}
     }
 }
 
-class ValidatePassword extends ValidateStrategy {
+class ValidatePassword extends ValidateFieldStrategy {
     validateText = (text) => {
         let passwordError = ""
+        let isValid = true
         let reg= /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
         if (reg.test(text) === false) {
             passwordError = "Password must contain minimum eight characters, at least one uppercase letter, " +
                 "one lowercase letter and one number"
+            isValid = false
         }
-        return {passwordError}
+        return {passwordError, isValid}
     }
 }
 
-class ValidateGeneralTextInput extends ValidateStrategy {
+class ValidateGeneralTextInput extends ValidateFieldStrategy {
     constructor (field_name) {
         super();
         this.field_name = field_name
@@ -53,18 +57,20 @@ class ValidateGeneralTextInput extends ValidateStrategy {
     validateText = (text) => {
         const errorAttribute = this.field_name + "Error"
         let textInputError = ""
+        let isValid = true
         if (text.length <= 0) {
             textInputError = "Field must have at least 1 character"
+            isValid = false
         }
-        return {[errorAttribute]: textInputError}
+        return {[errorAttribute]: textInputError, isValid}
     }
 }
 
-class ValidateWhatever extends ValidateStrategy {
+class ValidateWhatever extends ValidateFieldStrategy {
     validateText = (text) => {
         return {}
     }
 }
 
-const validateStrategyFactory = new ValidateStrategyFactory();
-export const getValidateStrategyFactory = () => validateStrategyFactory;
+const validateStrategyFactory = new ValidateFieldStrategyFactory();
+export const getValidateFieldStrategyFactory = () => validateStrategyFactory;

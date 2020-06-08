@@ -5,6 +5,7 @@ import axiosConfig from '../constants/axiosConfig';
 import AsyncStorage from '@react-native-community/async-storage';
 import GLOBAL_VAR from '../constants/Global'
 import {CustomFieldValidator} from "../classes/validator/CustomFieldValidator";
+import {CustomExistenceValidator} from "../classes/validator/CustomExistenceValidator";
 
 export class SignUpForm extends React.Component {
 
@@ -13,12 +14,23 @@ export class SignUpForm extends React.Component {
         this.state = {}
     };
 
+    onEndEditingAfter = (validation_obj) => {
+        this.setState(validation_obj)
+    }
+
     onEndEditing = (field_name, event) => {
         const text = event.nativeEvent.text
-        const validation_obj = CustomFieldValidator.validate(field_name, text)
-
-        // await new CustomExistenceValidator().validate()
-        this.setState(validation_obj)
+        let validation_obj = CustomFieldValidator.validate(field_name, text)
+        if (validation_obj.isValid && (field_name === GLOBAL_VAR.FIELD_NAME.USERNAME || field_name === GLOBAL_VAR.FIELD_NAME.EMAIL)) {
+            CustomExistenceValidator.validate(field_name, text).then(existence_obj => {
+                validation_obj = {...validation_obj, ...existence_obj}
+                this.onEndEditingAfter(validation_obj)
+            }).catch(error => {
+                console.log(error)
+            })
+        } else {
+            this.onEndEditingAfter(validation_obj)
+        }
     }
 
     _storeData = async (key, value) => {
@@ -48,12 +60,10 @@ export class SignUpForm extends React.Component {
                     headers: {"Authorization": "Bearer " + response.data.userDetails.token}
                 }).then(response => {
                     console.log(response)
+                    this.props.login();
                 }).catch(error => {
                     console.log(error)
                 });
-
-
-                // TODO: if succesful redirect
             })
             .catch(error => {
                 console.log(error);

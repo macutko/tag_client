@@ -62,8 +62,12 @@ export class GameScreen extends React.Component {
 
     componentDidMount() {
         MapboxGL.setTelemetryEnabled(false);
-        this.updateUserPosition();
-        this._retrieveKeys();
+        this._retrieveKeys()
+            .then(() => {
+                this.updateUserPosition();
+            }).catch(error => {
+                console.log(error)
+        });
     }
 
     updateUserPosition() {

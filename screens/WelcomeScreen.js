@@ -34,9 +34,9 @@ export class WelcomeScreen extends React.Component {
         })
     };
 
-    handleLoggin = (username) => {
+    handleLoggin = () => {
         this.closeModal();
-        this.props.navigation.navigate('GameScreen',{username: username});
+        this.props.navigation.navigate('GameScreen');
     };
 
     render = () => {
@@ -57,7 +57,7 @@ export class WelcomeScreen extends React.Component {
                     close={this.closeModal}/>
 
                 <FormOverlay
-                    elt={<SignUpForm/>}
+                    elt={<SignUpForm login={this.handleLoggin}/>}
                     visible={this.state.showSignUp}
                     close={this.closeModal}/>
 
