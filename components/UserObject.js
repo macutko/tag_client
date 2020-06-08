@@ -7,12 +7,15 @@ export class UserObject extends React.Component {
         super(props);
         this.state = {}
     };
+    user_clicked() {
+        console.log("here")
+}
 
     render() {
         return (
             <View>
                 <MapboxGL.PointAnnotation id={this.props.id} coordinate={this.props.coordinate}
-                                          >
+                                          onSelected={this.user_clicked} >
                     <View style={styles.circle_out}>
                         <View style={styles.circle_in_users}>
                             {/*// TODO: make sure the circle scales according to the real world shape of the radius!*/}

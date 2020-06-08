@@ -7,15 +7,24 @@ export class CurrentUser extends React.Component {
     constructor(props) {
         super(props);
     };
+    user_clicked() {
+        console.log("here")
+    }
+
 
     render() {
         return (
             <View>
-                <MapboxGL.PointAnnotation id="User" coordinate={this.props.currentPosition}>
+                <MapboxGL.PointAnnotation id="User" coordinate={this.props.currentPosition} onSelected={this.user_clicked}>
+                    <View>
+                        {/*<MapboxGL.Callout  style={styles.name}/>*/}
                     <View style={styles.circle_out}>
+
                         <View style={styles.circle_in}>
                             {/*TODO: make sure the circle scales according to the real world shape of the radius! */}
+
                         </View>
+                    </View>
                     </View>
                 </MapboxGL.PointAnnotation>
             </View>
@@ -24,6 +33,11 @@ export class CurrentUser extends React.Component {
 }
 
 const styles = StyleSheet.create({
+    name: {
+        width: 100,
+        height: 30,
+        fontSize: 11
+    },
     circle_in: {
         width: 10,
         height: 10,

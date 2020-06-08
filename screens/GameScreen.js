@@ -8,7 +8,6 @@ import config from "../constants/config";
 import {UserObject} from "../components/UserObject";
 import {CurrentUser} from "../components/CurrentUser";
 
-
 const util = require("../constants/utils")
 MapboxGL.setAccessToken(config.mapbox_key);
 
