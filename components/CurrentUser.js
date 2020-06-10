@@ -14,7 +14,7 @@ export class CurrentUser extends React.Component {
         // })
     };
     componentDidMount = () => {
-        this.props.socket.on('give_me_your_position', (data) =>  )
+
     }
 
     user_clicked = () => {
