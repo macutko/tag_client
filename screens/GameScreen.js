@@ -63,7 +63,7 @@ export class GameScreen extends React.Component {
         MapboxGL.setTelemetryEnabled(false);
         util._retrieveKeys()
             .then(() => {
-                this.updateUserPosition();
+                this._updateUserPosition();
 
                 this.socket = io.connect(config.baseURL, {'forceNew': true});
                 this.socket.on('connect', socket => {
