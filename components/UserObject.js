@@ -29,8 +29,8 @@ export class UserObject extends React.Component {
         return (
             <View>
                 {/* Catch zone */}
-                <MapboxGL.ShapeSource id="catch_zone" shape={catch_zone}> 
-                    <MapboxGL.FillLayer id='catch_zone_layer' style={mapbox_styles.catch_zone_layer}/>
+                <MapboxGL.ShapeSource id={this.props.id + "_catch_zone"} shape={catch_zone}> 
+                    <MapboxGL.FillLayer id={this.props.id + "_catch_zone_layer"} style={mapbox_styles.catch_zone_layer}/>
                 </MapboxGL.ShapeSource>
 
                 {/* User */}
@@ -45,6 +45,7 @@ export class UserObject extends React.Component {
     }
 }
 
+
 const mapbox_styles = {
     catch_zone_layer: {
         fillColor: 'rgba(207, 0, 15, 0.3)',
@@ -56,7 +57,7 @@ const styles = StyleSheet.create({
         width: 10,
         height: 10,
         borderRadius: 100 / 2,
-        backgroundColor: 'rgba(50,50,255, 1)'
+        backgroundColor: 'rgba(207, 0, 15, 1)'
     },
     circle_in_users: {
         width: 8,
