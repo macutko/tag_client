@@ -1,13 +1,13 @@
 import {StyleSheet, View} from 'react-native';
 import * as React from 'react';
 import MapboxGL from "@react-native-mapbox-gl/maps";
+
 import Geolocation from '@react-native-community/geolocation';
 import distance from "../constants/distance";
 import config from "../constants/config";
 import {UserObject} from "../components/UserObject";
 import {CurrentUser} from "../components/CurrentUser";
 import * as io from "socket.io-client";
-
 
 const util = require("../constants/utils")
 MapboxGL.setAccessToken(config.mapbox_key);
@@ -29,7 +29,7 @@ export class GameScreen extends React.Component {
 
             let new_distance = distance(lat, long, this.state.currentPosition[0], this.state.currentPosition[1]);
             let abs_diff = Math.abs(new_distance - this.state.currentDistance);
-            if (abs_diff >= 0.1) {
+            if (abs_diff >= 0.0) {
                 this.socket.emit('position_changed', {
                     "latitude": lat,
                     "longitude": long

@@ -1,4 +1,4 @@
-import axiosInstance from "../../constants/connectionInstances";
+import {axiosInstance} from "../../constants/connectionInstances";
 
 export class CustomExistenceValidator {
     constructor(){
