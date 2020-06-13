@@ -104,6 +104,7 @@ export class GameScreen extends React.Component {
                     compassViewPosition={1}
                     attributionEnabled={false}
                 >
+                    
                     <MapboxGL.UserLocation visible={false}
                                            showsUserHeadingIndicator={true} onUpdate={this._updateUserPosition}/>
                     <MapboxGL.Camera zoomLevel={20} defaultSettings={{
@@ -112,7 +113,7 @@ export class GameScreen extends React.Component {
                     }}/>
 
                     <CurrentUser currentPosition={this.state.currentPosition}/>
-                    <UserObject id={"Dummy"} coordinate={[17.1661355, 48.169825]}
+                    <UserObject id={"Dummy"} coordinate={[19.1661355, 48.8625]}
                                 player_location={this.state.currentPosition} socketID={"XXXXX"} s={this.socket}/>
 
                     {other_users}
