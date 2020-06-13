@@ -1,7 +1,6 @@
 import {StyleSheet, View} from 'react-native';
 import * as React from 'react';
 import MapboxGL from "@react-native-mapbox-gl/maps";
-
 import Geolocation from '@react-native-community/geolocation';
 import distance from "../constants/distance";
 import config from "../constants/config";
@@ -106,6 +105,7 @@ export class GameScreen extends React.Component {
                     compassViewPosition={1}
                     attributionEnabled={false}
                 >
+
                     <MapboxGL.UserLocation visible={false}
                                            showsUserHeadingIndicator={true} onUpdate={this._updateUserPosition}/>
                     <MapboxGL.Camera zoomLevel={20} defaultSettings={{
