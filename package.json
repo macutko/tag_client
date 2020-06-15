@@ -11,6 +11,7 @@
     "@react-navigation/native": "^5.1.6",
     "@react-navigation/stack": "^5.0.0-alpha.58",
     "@react-navigation/web": "~1.0.0-alpha.9",
+    "@turf/circle": "^6.0.1",
     "axios": "^0.19.2",
     "react": "~16.9.0",
     "react-dom": "~16.9.0",
