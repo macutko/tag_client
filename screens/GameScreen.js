@@ -3,15 +3,12 @@ import * as React from 'react';
 import MapboxGL from "@react-native-mapbox-gl/maps";
 import Geolocation from '@react-native-community/geolocation';
 import config from "../constants/config";
-import {OtherUserAnnotation} from "../components/user/OtherUserAnnotation";
-import {CurrentUserAnnotation} from "../components/user/CurrentUserAnnotation";
+import {OtherUserObject} from "../components/user/OtherUserObject";
+import {CurrentUserObject} from "../components/user/CurrentUserObject";
 import * as io from "socket.io-client";
 import {Text} from "react-native-elements";
+import {distance, requestPermission, _retrieveKeys} from "../helpers/utils";
 
-const util = require("../constants/utils")
-import {distance} from "../helpers/utils";
-
-const util = require("../helpers/utils")
 MapboxGL.setAccessToken(config.mapbox_key);
 
 
@@ -52,14 +49,14 @@ export class GameScreen extends React.Component {
             users: {},
             timer: 10,
         };
-        util.requestPermission().then(r => {
+        requestPermission().then(r => {
             if (r === false) {
                 this.props.navigation.navigate('SignInScreen');
             }
         }); //TODO: check if this is reliable and works on multiple relogins
 
         MapboxGL.setTelemetryEnabled(false);
-        util._retrieveKeys()
+        _retrieveKeys()
             .then((token) => {
                 this.setState({token: token})
                 this.socket = io.connect(config.baseURL, {'forceNew': true});
@@ -98,11 +95,11 @@ export class GameScreen extends React.Component {
 
     render() {
         let other_users = Object.keys(this.state.users).map((key, index) => (
-            <UserObject key={index} id={key} coordinate={this.state.users[key].position}
+            <OtherUserObject key={index} id={key} coordinate={this.state.users[key].position}
                         player_location={this.state.currentPosition} socketID={this.state.users[key].socketID}
                         socket={this.socket} updateTimer={this.updateTimer} getTimer={this.getTimer}/>
         ))
-        let current_user = <CurrentUser currentPosition={this.state.currentPosition} socket={this.socket} updateTimer={this.updateTimer} getTimer={this.getTimer}/>
+        let current_user = <CurrentUserObject currentPosition={this.state.currentPosition} socket={this.socket} updateTimer={this.updateTimer} getTimer={this.getTimer}/>
 
         return (
             <View style={styles.container}>

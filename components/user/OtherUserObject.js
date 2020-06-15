@@ -3,7 +3,7 @@ import {StyleSheet, View} from "react-native";
 import MapboxGL from "@react-native-mapbox-gl/maps";
 import circle from '@turf/circle';
 
-export class OtherUserAnnotation extends React.Component {
+export class OtherUserObject extends React.Component {
     constructor(props) {
         super(props);
         this.state = {}
