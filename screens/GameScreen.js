@@ -7,6 +7,7 @@ import config from "../constants/config";
 import {UserObject} from "../components/UserObject";
 import {CurrentUser} from "../components/CurrentUser";
 import * as io from "socket.io-client";
+import {Text} from "react-native-elements";
 
 const util = require("../constants/utils")
 MapboxGL.setAccessToken(config.mapbox_key);
@@ -28,7 +29,7 @@ export class GameScreen extends React.Component {
 
             let new_distance = distance(lat, long, this.state.currentPosition[0], this.state.currentPosition[1]);
             let abs_diff = Math.abs(new_distance - this.state.currentDistance);
-            if (abs_diff >= 0.0) {
+            if (abs_diff >= 0.1) {
                 this.socket.emit('position_changed', {
                     "latitude": lat,
                     "longitude": long
@@ -47,6 +48,7 @@ export class GameScreen extends React.Component {
             currentDistance: 0,
             token: undefined,
             users: {},
+            timer: 10,
         };
         util.requestPermission().then(r => {
             if (r === false) {
@@ -54,11 +56,6 @@ export class GameScreen extends React.Component {
             }
         }); //TODO: check if this is reliable and works on multiple relogins
 
-        this._updateUserPosition = this._updateUserPosition.bind(this)
-    }
-
-
-    componentDidMount = () => {
         MapboxGL.setTelemetryEnabled(false);
         util._retrieveKeys()
             .then((token) => {
@@ -74,29 +71,42 @@ export class GameScreen extends React.Component {
                             this._add_user(data)
                         })
                 });
-                this._updateUserPosition();
+
             }).catch(error => {
             console.log(error)
         });
 
     }
 
+    componentDidMount() {
+        this._updateUserPosition();
+    }
 
     _add_user = (data) => {
         this.state.users[data.userID] = {position: [data.long, data.lat], socketID: data.socketID}
         this.setState({users: this.state.users})
         console.log(this.state.users)
     }
+    updateTimer = (data) => {
+        this.setState({ timer: data })
+    }
+    getTimer = () => {
+        return this.state.timer
+    }
 
     render() {
         let other_users = Object.keys(this.state.users).map((key, index) => (
             <UserObject key={index} id={key} coordinate={this.state.users[key].position}
                         player_location={this.state.currentPosition} socketID={this.state.users[key].socketID}
-                        socket={this.socket}/>
+                        socket={this.socket} updateTimer={this.updateTimer} getTimer={this.getTimer}/>
         ))
+        let current_user = <CurrentUser currentPosition={this.state.currentPosition} socket={this.socket} updateTimer={this.updateTimer} getTimer={this.getTimer}/>
 
         return (
             <View style={styles.container}>
+                <View style={{width:30, backgroundColor:"transparent",position:'absolute',top:"2%",left:"2%",zIndex:10}}>
+                    <Text style={{backgroundColor:"red"}}>{this.state.timer}</Text>
+                </View>
                 <MapboxGL.MapView
                     styleURL={MapboxGL.StyleURL.Street}
                     style={styles.container}
@@ -114,7 +124,7 @@ export class GameScreen extends React.Component {
                     }}/>
 
 
-                    <CurrentUser currentPosition={this.state.currentPosition} socket={this.socket}/>
+                    {current_user}
                     {other_users}
 
 
