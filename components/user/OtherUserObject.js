@@ -3,19 +3,39 @@ import {StyleSheet, View} from "react-native";
 import MapboxGL from "@react-native-mapbox-gl/maps";
 import circle from '@turf/circle';
 
-export class OtherUserAnnotation extends React.Component {
+export class OtherUserObject extends React.Component {
     constructor(props) {
         super(props);
         this.state = {}
-        this.socket = this.props.s
     }
 
     user_clicked = () => {
-        this.socket.emit('initiate_chase', {
+        this.props.socket.emit('initiate_chase', {
             user: this.props.id,
             playerLocation: this.props.player_location,
             socketID: this.props.socketID
         })
+        this.interval = setInterval(
+            () => this.props.updateTimer(this.props.getTimer() - 1 ),
+            1000
+        );
+    }
+    componentDidUpdate = () => {
+        if (this.props.getTimer() === 0) {
+            this.props.socket.emit('won_chase', {ID: this.state.chaser});
+            this.setState({
+                chaser: undefined,
+                beingChased: false
+            })
+            console.log("WON!!")
+            this.props.updateTimer(10)
+            clearInterval(this.interval);
+        }
+
+        console.log(this.props.getTimer())
+    }
+    componentWillUnmount = () => {
+        clearInterval(this.interval);
     }
 
     render() {
@@ -35,10 +55,10 @@ export class OtherUserAnnotation extends React.Component {
 
                 {/* User */}
                 <MapboxGL.PointAnnotation id={this.props.id} coordinate={this.props.coordinate} onSelected={this.user_clicked}>
-                    <View style={styles.circle_out}>
+
                         <View style={styles.circle_in_users}>
                         </View>
-                    </View>
+
                 </MapboxGL.PointAnnotation>
             </View>
         )
@@ -60,19 +80,10 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(207, 0, 15, 1)'
     },
     circle_in_users: {
-        width: 8,
-        height: 8,
+        width: 25,
+        height: 25,
         borderRadius: 100 / 2,
         backgroundColor: 'rgba(207, 0, 15, 1)'
     },
-    circle_out: {
-        alignItems: 'center',
-        flex: 1,
-        justifyContent: 'center',
-        opacity: 0.5,
-        width: 12,
-        height: 12,
-        borderRadius: 100 / 2,
-        backgroundColor: 'rgba(207, 0, 15, 0.4)'
-    }
+
 })
