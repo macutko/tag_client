@@ -15,6 +15,7 @@ node_modules/
 # macOS
 .DS_Store
 android/app/build
+android/*
 
 
 
