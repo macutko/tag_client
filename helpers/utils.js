@@ -14,6 +14,19 @@ const _retrieveKeys = async () => {
     }
 };
 
+const getUsername = async () => {
+    try {
+        const name = await AsyncStorage.getItem("username");
+        if (name === undefined) {
+            console.log("got nothing on name!");
+            console.log(name);
+        }
+        return name
+    } catch (error) {
+        console.log(error)
+    }
+};
+
 const requestPermission = async () => {
     try {
         const granted = await PermissionsAndroid.requestMultiple([
@@ -52,5 +65,6 @@ const deg2rad = (deg) => {
 module.exports = {
     _retrieveKeys,
     requestPermission,
-    distance
+    distance,
+    getUsername
 }

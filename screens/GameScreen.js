@@ -7,7 +7,8 @@ import {OtherUserObject} from "../components/user/OtherUserObject";
 import {CurrentUserObject} from "../components/user/CurrentUserObject";
 import * as io from "socket.io-client";
 import {Text} from "react-native-elements";
-import {distance, requestPermission, _retrieveKeys} from "../helpers/utils";
+import {distance, requestPermission, _retrieveKeys, getUsername} from "../helpers/utils";
+import AsyncStorage from "@react-native-community/async-storage";
 
 MapboxGL.setAccessToken(config.mapbox_key);
 
@@ -31,7 +32,8 @@ export class GameScreen extends React.Component {
             if (abs_diff >= 0.1) {
                 this.socket.emit('position_changed', {
                     "latitude": lat,
-                    "longitude": long
+                    "longitude": long,
+                    "username": this.state.username
                 })
                 this.setState({currentPosition: [long, lat], currentDistance: new_distance}, function () {
                     console.log("Absolute difference between new and old position: " + abs_diff);
@@ -48,6 +50,7 @@ export class GameScreen extends React.Component {
             token: undefined,
             users: {},
             timer: 10,
+            inChase: false
         };
         requestPermission().then(r => {
             if (r === false) {
@@ -78,33 +81,59 @@ export class GameScreen extends React.Component {
     }
 
     componentDidMount() {
+        getUsername().then((data) => {
+            this.setState({username: data})
+        })
         this._updateUserPosition();
     }
 
     _add_user = (data) => {
-        this.state.users[data.userID] = {position: [data.long, data.lat], socketID: data.socketID}
+        this.state.users[data.userID] = {
+            position: [data.long, data.lat],
+            socketID: data.socketID,
+            username: data.username
+        }
         this.setState({users: this.state.users})
         console.log(this.state.users)
     }
     updateTimer = (data) => {
-        this.setState({ timer: data })
+        this.setState({timer: data})
     }
     getTimer = () => {
         return this.state.timer
     }
+    updateChaseStatus = () => {
+        this.setState((prevState) => ({
+            inChase: !prevState.inChase
+        }), () => {
+            console.log('handleUpdateChase AFTER', this.state.inChase);
+        });
+    }
+    getChaseStatus = () => {
+        return this.state.inChase
+    }
 
     render() {
         let other_users = Object.keys(this.state.users).map((key, index) => (
-            <OtherUserObject key={index} id={key} coordinate={this.state.users[key].position}
-                        player_location={this.state.currentPosition} socketID={this.state.users[key].socketID}
-                        socket={this.socket} updateTimer={this.updateTimer} getTimer={this.getTimer}/>
+            <OtherUserObject key={index} id={key} userObject={this.state.users[key]}
+                             socket={this.socket} updateTimer={this.updateTimer} getTimer={this.getTimer}
+                             currentUser={this.state.username} updateChaseStatus={this.updateChaseStatus}
+                             getChaseStatus={this.getChaseStatus}/>
         ))
-        let current_user = <CurrentUserObject currentPosition={this.state.currentPosition} socket={this.socket} updateTimer={this.updateTimer} getTimer={this.getTimer}/>
+        let current_user = <CurrentUserObject currentPosition={this.state.currentPosition} socket={this.socket}
+                                              updateTimer={this.updateTimer} getTimer={this.getTimer}/>
 
         return (
             <View style={styles.container}>
-                <View style={{width:30, backgroundColor:"transparent",position:'absolute',top:"2%",left:"2%",zIndex:10}}>
-                    <Text style={{backgroundColor:"red"}}>{this.state.timer}</Text>
+                <View style={{
+                    width: 30,
+                    backgroundColor: "transparent",
+                    position: 'absolute',
+                    top: "2%",
+                    left: "2%",
+                    zIndex: 10
+                }}>
+                    <Text style={{backgroundColor: "red"}}>{this.state.timer}</Text>
                 </View>
                 <MapboxGL.MapView
                     styleURL={MapboxGL.StyleURL.Street}

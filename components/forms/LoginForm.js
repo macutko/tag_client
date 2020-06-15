@@ -34,11 +34,9 @@ export class LoginForm extends React.Component {
             password: this.state.password,
         })
             .then(response => {
-                // TODO: if logged in - got to game Dashboard
-                console.log("Logged in!");
+                this._storeData("username", this.state.username);
                 this._storeData("token", response.data.token);
                 this.props.login()
-                // TODO: save token as well and set the timer to refresh it
             })
             .catch(error => {
                 console.log(error);

@@ -2,7 +2,7 @@ import * as React from "react";
 import {StyleSheet, View} from "react-native";
 import MapboxGL from "@react-native-mapbox-gl/maps";
 import circle from '@turf/circle';
-import {Text} from "react-native-elements";
+import {getUsername} from '../../helpers/utils'
 
 
 export class CurrentUserObject extends React.Component {
@@ -12,39 +12,74 @@ export class CurrentUserObject extends React.Component {
         this.state = {
             beingChased: false,
             chaser: undefined,
+            chaserName: undefined
         }
-
+        getUsername().then((data) => {
+            this.setState({username: data})
+        })
     }
 
     componentDidMount = () => {
-        this.props.socket.on('being_chased', (data) => {
-            console.log("Being chased");
+        this.props.socket.on('escaped_chase', (data) => {
+            console.log("I was told I ran away")
             this.setState({
-                beingChased: true,
-                chaser: data.ID,
+                chaserSocketID: undefined,
+                beingChased: false
             })
+        })
+        this.props.socket.on('lost_chase', (data) => {
+            console.log("Me: " + this.state.username + " , has lost over " + data.chaser + " and was told!")
 
-            this.interval = setInterval(
-                () => this.props.updateTimer(this.props.getTimer() - 1 ),
-                1000
-            );
+            this.setState({
+                chaserSocketID: undefined,
+                beingChased: false,
+                chaserName: undefined
+
+            })
+        })
+        this.props.socket.on('initiate_chase', (data) => {
+            if (this.state.beingChased) {
+                console.log("Already being chased!")
+            } else {
+                this.setState({
+                    beingChased: true,
+                    chaserSocketID: data.chaserSocketID,
+                    chaserName: data.username,
+                }, () => {
+                    console.log(this.state.username)
+                    console.log("Me: " + this.state.username + " , is being chased by " + data.username)
+                    this.interval = setInterval(
+                        () => this.props.updateTimer(this.props.getTimer() - 1),
+                        1000
+                    );
+                });
+
+
+            }
         })
     }
 
     componentDidUpdate = () => {
         if (this.props.getTimer() === 0) {
-            this.props.socket.emit('lost_chase', {ID: this.state.chaser});
-            this.setState({
-                chaser: undefined,
-                beingChased: false
-            })
-            console.log("Lost!!")
-
+            if (this.state.beingChased === false) {
+                console.log("I lost and was already told!")
+            } else {
+                this.props.socket.emit('lost_chase', {
+                    chaserID: this.state.chaserSocketID,
+                    chaserUsername: this.state.chaserName,
+                    loserUsername: this.state.username
+                });
+                this.setState({
+                    chaserSocketID: undefined,
+                    beingChased: false
+                })
+                console.log("I: " + this.state.username + " lost a chase to: " + this.state.chaserName)
+            }
             this.props.updateTimer(10)
             clearInterval(this.interval);
         }
 
-        console.log(this.props.getTimer())
+        console.log(this.state.username + ' : ' + this.props.getTimer())
     }
 
     componentWillUnmount = () => {
@@ -52,11 +87,18 @@ export class CurrentUserObject extends React.Component {
     }
 
     chase_broken = () => {
-        this.props.socket.emit('escaped_chase', {ID: this.state.chaser});
-        this.setState({
-            chaser: undefined,
-            beingChased: false,
-        })
+        if (this.state.chaserSocketID === undefined) {
+            console.log("I was already told that I got away")
+        } else {
+            this.props.socket.emit('escaped_chase', {
+                chaserSocketID: this.state.chaserSocketID,
+                username: this.state.username
+            });
+            this.setState({
+                chaserSocketID: undefined,
+                beingChased: false,
+            })
+        }
         this.props.updateTimer(10)
         clearInterval(this.interval);
     }
@@ -77,8 +119,6 @@ export class CurrentUserObject extends React.Component {
             <View>
 
 
-
-
                 {/* Catch zone */}
                 <MapboxGL.ShapeSource id="catch_zone" shape={catch_zone}>
                     <MapboxGL.FillLayer id='catch_zone_layer' style={mapbox_styles.catch_zone_layer}/>
@@ -90,9 +130,8 @@ export class CurrentUserObject extends React.Component {
                     <View>
                         {/*<MapboxGL.Callout  style={styles.name}/>*/}
 
-                            <View style={styles.circle_in}>
-                            </View>
-
+                        <View style={styles.circle_in}>
+                        </View>
 
 
                     </View>
