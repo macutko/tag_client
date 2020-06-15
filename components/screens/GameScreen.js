@@ -2,12 +2,12 @@ import {StyleSheet, View} from 'react-native';
 import * as React from 'react';
 import MapboxGL from "@react-native-mapbox-gl/maps";
 import Geolocation from '@react-native-community/geolocation';
-import config from "../constants/config";
-import {OtherUserObject} from "../components/user/OtherUserObject";
-import {CurrentUserObject} from "../components/user/CurrentUserObject";
+import config from "../../constants/config";
+import {OtherUserObject} from "../user/OtherUserObject";
+import {CurrentUserObject} from "../user/CurrentUserObject";
 import * as io from "socket.io-client";
 import {Text} from "react-native-elements";
-import {distance, requestPermission, _retrieveKeys} from "../helpers/utils";
+import {distance, requestPermission, _getFromMemory} from "../../helpers/utils";
 
 MapboxGL.setAccessToken(config.mapbox_key);
 
@@ -56,7 +56,7 @@ export class GameScreen extends React.Component {
         }); //TODO: check if this is reliable and works on multiple relogins
 
         MapboxGL.setTelemetryEnabled(false);
-        _retrieveKeys()
+        _getFromMemory("token")
             .then((token) => {
                 this.setState({token: token})
                 this.socket = io.connect(config.baseURL, {'forceNew': true});
