@@ -1,7 +1,7 @@
 import {View} from 'react-native';
 import * as React from 'react';
 import {Button, Input} from "react-native-elements";
-import {axiosInstance} from "../constants/connectionInstances";
+import {axiosInstance} from "../../helpers/connectionInstances";
 import AsyncStorage from '@react-native-community/async-storage';
 
 export class LoginForm extends React.Component {

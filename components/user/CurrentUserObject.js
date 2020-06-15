@@ -5,7 +5,7 @@ import circle from '@turf/circle';
 import {Text} from "react-native-elements";
 
 
-export class CurrentUser extends React.Component {
+export class CurrentUserAnnotation extends React.Component {
 
     constructor(props) {
         super(props);
