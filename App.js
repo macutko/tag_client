@@ -5,7 +5,7 @@ import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import {AppState} from 'react-native'
 import {WelcomeScreen} from "./screens/WelcomeScreen";
-import {GameScreen} from "./screens/GameScreen";
+import {UserNavigation} from "./components/user/UserNavigation";
 
 const Stack = createStackNavigator();
 
@@ -37,7 +37,7 @@ export default class App extends React.Component {
                 <StatusBar hidden={true}/>
                 <Stack.Navigator screenOptions={{headerShown: false}} >
                     <Stack.Screen name="WelcomeScreen" component={WelcomeScreen}/>
-                    <Stack.Screen name="GameScreen" component={GameScreen}/>
+                    <Stack.Screen name="UserNavigation" component={UserNavigation}/>
                 </Stack.Navigator>
             </NavigationContainer>
         );

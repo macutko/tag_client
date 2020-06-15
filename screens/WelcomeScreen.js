@@ -1,9 +1,9 @@
 import {View, StyleSheet} from 'react-native';
 import * as React from 'react';
 import {Button} from "react-native-elements";
-import {FormOverlay} from "../components/FormOverlay";
-import {LoginForm} from "../components/LoginForm";
-import {SignUpForm} from "../components/SignUpForm";
+import {FormOverlay} from "../components/forms/FormOverlay";
+import {LoginForm} from "../components/forms/LoginForm";
+import {SignUpForm} from "../components/forms/SignUpForm";
 
 export class WelcomeScreen extends React.Component {
 
@@ -36,7 +36,7 @@ export class WelcomeScreen extends React.Component {
 
     handleLoggin = () => {
         this.closeModal();
-        this.props.navigation.navigate('GameScreen');
+        this.props.navigation.navigate('UserNavigation');
     };
 
     render = () => {

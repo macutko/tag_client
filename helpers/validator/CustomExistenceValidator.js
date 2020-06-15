@@ -1,4 +1,4 @@
-import {axiosInstance} from "../../constants/connectionInstances";
+import axiosConfig from "../../constants/axiosConfig";
 
 export class CustomExistenceValidator {
     constructor(){
@@ -10,7 +10,7 @@ export class CustomExistenceValidator {
         }
 
         return new Promise((resolve, reject) => {
-            axiosInstance.get('/users/exists', {
+            axiosConfig.get('/users/exists', {
                 params: {
                     ...data
                 }
