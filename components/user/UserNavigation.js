@@ -1,8 +1,8 @@
 import * as React from 'react';
 import {createMaterialBottomTabNavigator} from '@react-navigation/material-bottom-tabs';
-import {GameScreen} from "../../screens/GameScreen";
-import {RoomsScreen} from "../../screens/RoomsScreen";
-import {SettingsScreen} from "../../screens/SettingsScreen";
+import {GameScreen} from "../screens/GameScreen";
+import {RoomsScreen} from "../screens/RoomsScreen";
+import {SettingsScreen} from "../screens/SettingsScreen";
 import {Icon} from "react-native-elements";
 
 const Tab = createMaterialBottomTabNavigator();
