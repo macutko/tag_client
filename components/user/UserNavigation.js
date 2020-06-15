@@ -1,9 +1,9 @@
 import * as React from 'react';
 import {createMaterialBottomTabNavigator} from '@react-navigation/material-bottom-tabs';
-import {MaterialCommunityIcons} from '@expo/vector-icons';
 import {GameScreen} from "../../screens/GameScreen";
 import {RoomsScreen} from "../../screens/RoomsScreen";
 import {SettingsScreen} from "../../screens/SettingsScreen";
+import {Icon} from "react-native-elements";
 
 const Tab = createMaterialBottomTabNavigator();
 
@@ -22,7 +22,7 @@ export class UserNavigation extends React.Component {
                     options={{
                         tabBarLabel: 'Game',
                         tabBarIcon: ({ color }) => (
-                            <MaterialCommunityIcons name="home" color={color} size={26} />
+                            <Icon name="rowing" type='material' color={color} size={26}/>
                         ),
                     }}
                 />
@@ -32,7 +32,7 @@ export class UserNavigation extends React.Component {
                     options={{
                         tabBarLabel: 'Rooms',
                         tabBarIcon: ({ color }) => (
-                            <MaterialCommunityIcons name="bell" color={color} size={26} />
+                            <Icon name="home" type='material' color={color} size={26}/>
                         ),
                     }}
                 />
@@ -42,7 +42,7 @@ export class UserNavigation extends React.Component {
                     options={{
                         tabBarLabel: 'Settings',
                         tabBarIcon: ({ color }) => (
-                            <MaterialCommunityIcons name="account" color={color} size={26} />
+                            <Icon name="home" type='material' color={color} size={26}/>
                         ),
                     }}
                 />

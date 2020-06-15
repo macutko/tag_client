@@ -8,6 +8,8 @@
     "@react-native-community/geolocation": "^2.0.2",
     "@react-native-community/masked-view": "0.1.5",
     "@react-native-mapbox-gl/maps": "^8.0.0",
+    "@react-navigation/bottom-tabs": "^5.4.5",
+    "@react-navigation/material-bottom-tabs": "^5.2.5",
     "@react-navigation/native": "^5.1.6",
     "@react-navigation/stack": "^5.0.0-alpha.58",
     "@react-navigation/web": "~1.0.0-alpha.9",
@@ -18,6 +20,7 @@
     "react-native": "^0.62.2",
     "react-native-elements": "^1.2.7",
     "react-native-gesture-handler": "~1.5.0",
+    "react-native-paper": "^3.10.1",
     "react-native-reanimated": "~1.4.0",
     "react-native-safe-area-context": "0.6.0",
     "react-native-screens": "2.0.0-alpha.12",
@@ -28,6 +31,7 @@
     "socket.io-client": "^2.3.0"
   },
   "devDependencies": {
+    "@expo/vector-icons": "^10.2.0",
     "@react-native-community/async-storage": "^1.9.0",
     "metro-react-native-babel-preset": "^0.59.0"
   },

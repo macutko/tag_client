@@ -5,5 +5,7 @@ const axiosInstance = axios.create({
     baseURL: config.baseURL,
 });
 
+axiosInstance.defaults.timeout = 10000
+
 
 module.exports = {axiosInstance}
