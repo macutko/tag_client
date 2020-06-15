@@ -10,9 +10,10 @@ const Tab = createMaterialBottomTabNavigator();
 export class UserNavigation extends React.Component {
     render = () => {
         return (
+
             <Tab.Navigator
                 initialRouteName="Game"
-                activeColor="#e91e63"
+                activeTintColor="#ffffff"
                 labelStyle={{ fontSize: 12 }}
                 style={{ backgroundColor: 'tomato' }}
             >
@@ -22,7 +23,7 @@ export class UserNavigation extends React.Component {
                     options={{
                         tabBarLabel: 'Game',
                         tabBarIcon: ({ color }) => (
-                            <Icon name="rowing" type='material' color={color} size={26}/>
+                            <Icon name='map-marker' type='font-awesome' color={color} size={26}/>
                         ),
                     }}
                 />
@@ -32,7 +33,7 @@ export class UserNavigation extends React.Component {
                     options={{
                         tabBarLabel: 'Rooms',
                         tabBarIcon: ({ color }) => (
-                            <Icon name="home" type='material' color={color} size={26}/>
+                            <Icon name="bars" type='font-awesome' color={color} size={26}/>
                         ),
                     }}
                 />
@@ -42,7 +43,7 @@ export class UserNavigation extends React.Component {
                     options={{
                         tabBarLabel: 'Settings',
                         tabBarIcon: ({ color }) => (
-                            <Icon name="home" type='material' color={color} size={26}/>
+                            <Icon name="cog" type='font-awesome' color={color} size={26}/>
                         ),
                     }}
                 />
