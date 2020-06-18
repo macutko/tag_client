@@ -3,32 +3,36 @@ import * as React from 'react';
 import MapboxGL from "@react-native-mapbox-gl/maps";
 import Geolocation from '@react-native-community/geolocation';
 import config from "../constants/config";
-import {OtherUserObject} from "../components/user/OtherUserObject";
+import {UserObject} from "../components/user/UserObject";
 import {CurrentUserObject} from "../components/user/CurrentUserObject";
 import * as io from "socket.io-client";
 import {Text} from "react-native-elements";
 import {distance, requestPermission, _retrieveKeys, getUsername} from "../helpers/utils";
-import AsyncStorage from "@react-native-community/async-storage";
 
 MapboxGL.setAccessToken(config.mapbox_key);
-
+const l = require('../helpers/logging');
 
 export class GameScreen extends React.Component {
     constructor(props) {
         super(props);
+
+        this.timeRemaining = 10;
         this.state = {
-            currentPosition: [-73.98330688476561, 40.76975180901395],
+            chaseStatus: false,
             currentDistance: 0,
             token: undefined,
             users: {},
-            timer: 10,
-            inChase: false
+            currentUserObject: {
+                position: [-73.98330688476561, 40.76975180901395],
+                socketID: undefined,
+                username: undefined
+            }
         };
         requestPermission().then(r => {
             if (r === false) {
                 this.props.navigation.navigate('SignInScreen');
             }
-        }); //TODO: check if this is reliable and works on multiple relogins
+        });
 
         MapboxGL.setTelemetryEnabled(false);
         _retrieveKeys()
@@ -38,18 +42,32 @@ export class GameScreen extends React.Component {
                 this.socket.on('connect', socket => {
                     this.socket
                         .on('authenticated', () => {
-                            console.log("Authorized to PLAY!!!")
+                            this.setState(prevState => ({
+                                currentUserObject: {
+                                    ...prevState.currentUserObject,
+                                    socketID: this.socket.sessionId
+                                },
+                            }), () => {
+                                console.log("Authenticated to play in sockets")
+                            })
                         })
                         .emit('authenticate', {token: token})
                         .on('position_update', (data) => {
-                            this._add_user(data)
+                            this.add_user(data)
                         })
                 });
 
             }).catch(error => {
             console.log(error)
         });
+        getUsername().then((data) => {
+            this.state.currentUserObject.username = data
+        })
 
+    }
+
+    componentDidMount() {
+        this.updateUserPosition();
     }
 
     componentWillUnmount = () => {
@@ -58,77 +76,90 @@ export class GameScreen extends React.Component {
         clearInterval(this.interval);
     }
 
-    _updateUserPosition = () => {
+    updateUserPosition = () => {
         // Rather use this position due to the accuracy compared to MapBox
 
         Geolocation.getCurrentPosition(info => {
             let lat = info["coords"]["latitude"];
             let long = info["coords"]["longitude"];
 
-            let new_distance = distance(lat, long, this.state.currentPosition[0], this.state.currentPosition[1]);
+            let new_distance = distance(lat, long, this.state.currentUserObject.position[0], this.state.currentUserObject.position[1]);
             let abs_diff = Math.abs(new_distance - this.state.currentDistance);
             if (abs_diff >= 0.1) {
                 this.socket.emit('position_changed', {
                     "latitude": lat,
                     "longitude": long,
-                    "username": this.state.username
+                    "username": this.state.currentUserObject.username
                 })
-                this.setState({currentPosition: [long, lat], currentDistance: new_distance}, function () {
+                this.setState(prevState => ({
+                    currentUserObject: {
+                        ...prevState.currentUserObject,
+                        position: [long, lat]
+                    },
+                    currentDistance: new_distance
+                }), () => {
                     console.log("Absolute difference between new and old position: " + abs_diff);
-                });
+                })
             }
         });
     };
 
-    componentDidMount() {
-        getUsername().then((data) => {
-            this.setState({username: data})
-        })
-        this._updateUserPosition();
-    }
-
-    _add_user = (data) => {
+    add_user = (data) => {
         this.state.users[data.userID] = {
             position: [data.long, data.lat],
             socketID: data.socketID,
             username: data.username
         }
         this.setState({users: this.state.users})
-        console.log(this.state.users)
     }
-    startTimer = () => {
-        this.interval = setInterval(
-            () => this.setState((prevState) => ({timer: prevState.timer - 1})),
-            1000
-        );
+
+    componentDidUpdate(prevProps, prevState, snapshot) {
+
     }
-    cancelTimer = () => {
+
+    startChase = () => {
+        this.setState({
+            chaseStatus: true
+        }, () => {
+            this.interval = setInterval(
+                () => {
+                    this.timeRemaining = this.timeRemaining - 1
+                    l.timer(this.state.currentUserObject.username, `Timer: ${this.timeRemaining} \t ChaseStatus: ${this.state.chaseStatus}`)
+                    if (this.timeRemaining === 0) {
+                        this.setState({
+                            chaseStatus: false
+                        }, () => {
+                            clearInterval(this.interval)
+                            this.timeRemaining = 10
+                        })
+                    }
+                },
+                1000
+            )
+        })
+
+    }
+
+    stopChase = () => {
         clearInterval(this.interval);
-        this.setState({timer: 10});
-    }
-    updateChaseStatus = () => {
-        this.setState((prevState) => ({
-            inChase: !prevState.inChase
-        }), () => {
-            console.log('handleUpdateChase AFTER', this.state.inChase);
-        });
-    }
-    getChaseStatus = () => {
-        return this.state.inChase
+        // this.chaseStatus = false;
+        this.timeRemaining = 10;
+
+        l.log(this.state.currentUserObject.username, `ChaseStats: ${this.state.chaseStatus}`)
     }
 
     render() {
         let other_users = Object.keys(this.state.users).map((key, index) => (
-            <OtherUserObject key={index} id={key} userObject={this.state.users[key]}
-                             socket={this.socket} currentUser={this.state.username}
-                             updateChaseStatus={this.updateChaseStatus}
-                             getChaseStatus={this.getChaseStatus} startTimer={this.startTimer}
-                             cancelTimer={this.cancelTimer} timer={this.state.timer}/>
+            <UserObject key={index} id={key} userObject={this.state.users[key]}
+                        socket={this.socket} currentUser={this.state.currentUserObject}
+                        chaseStatus={this.state.chaseStatus} startChase={this.startChase}
+                        stopChase={this.stopChase} timer={this.timeRemaining}/>
         ))
-        let current_user = <CurrentUserObject currentPosition={this.state.currentPosition} socket={this.socket}
-                                              updateChaseStatus={this.updateChaseStatus}
-                                              getChaseStatus={this.getChaseStatus} startTimer={this.startTimer}
-                                              cancelTimer={this.cancelTimer} timer={this.state.timer}/>
+        let current_user = <CurrentUserObject id={this.state.currentUserObject.username}
+                                              userObject={this.state.currentUserObject}
+                                              socket={this.socket} currentUser={this.state.currentUserObject}
+                                              chaseStatus={this.state.chaseStatus} startChase={this.startChase}
+                                              stopChase={this.stopChase} timer={this.timeRemaining}/>
 
         return (
             <View style={styles.container}>
@@ -138,9 +169,8 @@ export class GameScreen extends React.Component {
                     position: 'absolute',
                     top: "2%",
                     left: "2%",
-                    zIndex: 10
                 }}>
-                    <Text style={{backgroundColor: "red"}}>{this.state.timer}</Text>
+                    <Text style={{backgroundColor: "red"}}>{this.timeRemaining}</Text>
                 </View>
                 <MapboxGL.MapView
                     styleURL={MapboxGL.StyleURL.Street}
@@ -151,16 +181,16 @@ export class GameScreen extends React.Component {
                     attributionEnabled={false}
                 >
                     <MapboxGL.UserLocation visible={false}
-                                           showsUserHeadingIndicator={true} onUpdate={this._updateUserPosition}/>
+                                           showsUserHeadingIndicator={true} onUpdate={this.updateUserPosition}/>
                     <MapboxGL.Camera zoomLevel={20} defaultSettings={{
-                        centerCoordinate: this.state.currentPosition,
+                        centerCoordinate: this.state.currentUserObject.position,
                         zoomLevel: 2,
                     }}/>
 
-
-                    {current_user}
-                    {other_users}
-
+                    <View>
+                        {current_user}
+                        {other_users}
+                    </View>
 
                 </MapboxGL.MapView>
 
@@ -178,20 +208,5 @@ const styles = StyleSheet.create({
     map: {
         height: 400,
         marginTop: 80
-    },
-    annotationContainer: {
-        width: 30,
-        height: 30,
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: 'white',
-        borderRadius: 15
-    },
-    annotationFill: {
-        width: 30,
-        height: 30,
-        borderRadius: 15,
-        backgroundColor: 'blue',
-        transform: [{scale: 0.6}]
     }
 });
