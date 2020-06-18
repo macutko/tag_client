@@ -6,28 +6,27 @@ import circle from '@turf/circle';
 export class OtherUserObject extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {
-        }
+        this.state = {}
     }
 
     user_clicked = () => {
-        if (this.props.getChaseStatus()){
+        if (this.props.getChaseStatus()) {
             console.log("Already in chase!")
-        }else {
+        } else {
             this.props.updateChaseStatus()
             this.props.socket.emit('initiate_chase', {
-                user: this.props.id, //ID of user on the map
                 socketID: this.props.userObject.socketID, // socket ID of the user on the map
                 username: this.props.currentUser // username of the player playing this game
             })
-            this.interval = setInterval(
-                () => this.props.updateTimer(this.props.getTimer() - 1),
-                1000
-            );
+            this.props.startTimer()
         }
     }
-    componentDidUpdate = () => {
-        if (this.props.getTimer() === 0) {
+    componentWillUnmount = () => {
+        this.props.cancelTimer()
+    }
+
+    componentDidUpdate(prevProps, prevState, snapshot) {
+        if (this.props.timer === 0) {
             if (this.state.chaser === undefined) {
                 console.log("I won but I was already told!")
 
@@ -41,23 +40,23 @@ export class OtherUserObject extends React.Component {
                     chaser: undefined,
                 })
             }
-            this.props.updateTimer(10)
-            clearInterval(this.interval);
+            this.props.cancelTimer()
             this.props.updateChaseStatus()
         }
 
-        console.log(this.props.currentUser + ' : ' + this.props.getTimer())
+        console.log(this.props.currentUser + ' : ' + this.props.timer)
     }
-    componentWillUnmount = () => {
-        clearInterval(this.interval);
-    }
+
     componentDidMount = () => {
         this.props.socket.on('won_chase', (data) => {
             console.log("I was told I won over " + data.loser)
             this.setState({
                 chaser: undefined,
             })
+            this.props.updateChaseStatus()
         })
+
+
     }
 
     render() {

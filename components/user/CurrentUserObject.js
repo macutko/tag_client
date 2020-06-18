@@ -10,7 +10,6 @@ export class CurrentUserObject extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            beingChased: false,
             chaser: undefined,
             chaserName: undefined
         }
@@ -18,50 +17,10 @@ export class CurrentUserObject extends React.Component {
             this.setState({username: data})
         })
     }
-
-    componentDidMount = () => {
-        this.props.socket.on('escaped_chase', (data) => {
-            console.log("I was told I ran away")
-            this.setState({
-                chaserSocketID: undefined,
-                beingChased: false
-            })
-        })
-        this.props.socket.on('lost_chase', (data) => {
-            console.log("Me: " + this.state.username + " , has lost over " + data.chaser + " and was told!")
-
-            this.setState({
-                chaserSocketID: undefined,
-                beingChased: false,
-                chaserName: undefined
-
-            })
-        })
-        this.props.socket.on('initiate_chase', (data) => {
-            if (this.state.beingChased) {
-                console.log("Already being chased!")
-            } else {
-                this.setState({
-                    beingChased: true,
-                    chaserSocketID: data.chaserSocketID,
-                    chaserName: data.username,
-                }, () => {
-                    console.log(this.state.username)
-                    console.log("Me: " + this.state.username + " , is being chased by " + data.username)
-                    this.interval = setInterval(
-                        () => this.props.updateTimer(this.props.getTimer() - 1),
-                        1000
-                    );
-                });
-
-
-            }
-        })
-    }
-
-    componentDidUpdate = () => {
-        if (this.props.getTimer() === 0) {
-            if (this.state.beingChased === false) {
+    componentDidUpdate(prevProps, prevState, snapshot) {
+        // this is an Ugly if!! but works for now, serves to identify is someone is chased or is the chaser
+        if ((this.props.timer === 0) && (!this.state.chaser === undefined)) {
+            if (!this.props.getChaseStatus) {
                 console.log("I lost and was already told!")
             } else {
                 this.props.socket.emit('lost_chase', {
@@ -71,19 +30,62 @@ export class CurrentUserObject extends React.Component {
                 });
                 this.setState({
                     chaserSocketID: undefined,
-                    beingChased: false
                 })
                 console.log("I: " + this.state.username + " lost a chase to: " + this.state.chaserName)
             }
-            this.props.updateTimer(10)
-            clearInterval(this.interval);
+            this.props.updateChaseStatus()
+            this.props.cancelTimer()
+        }else if(this.props.timer === 0){
+            this.props.updateChaseStatus()
+            this.props.cancelTimer()
         }
 
-        console.log(this.state.username + ' : ' + this.props.getTimer())
+        console.log(this.state.username + ' : ' + this.props.timer)
     }
 
+    componentDidMount = () => {
+        this.props.socket.on('escaped_chase', (data) => {
+            console.log("I was told I ran away")
+            this.setState({
+                chaserSocketID: undefined,
+            })
+            this.props.updateChaseStatus()
+            this.props.cancelTimer()
+
+        })
+        this.props.socket.on('lost_chase', (data) => {
+            console.log("Me: " + this.state.username + " , has lost over " + data.chaser + " and was told!")
+
+            this.setState({
+                chaserSocketID: undefined,
+                chaserName: undefined
+            })
+            this.props.updateChaseStatus()
+        })
+        this.props.socket.on('initiate_chase', (data) => {
+            if (this.props.getChaseStatus()) {
+                console.log("Already being chased!")
+            } else {
+                this.setState({
+                    chaserSocketID: data.chaserSocketID,
+                    chaserName: data.username,
+                }, () => {
+                    this.props.updateChaseStatus()
+                    console.log(this.state.username)
+                    console.log("Me: " + this.state.username + " , is being chased by " + data.username)
+                    this.props.startTimer()
+                });
+
+
+            }
+        })
+
+
+    }
+
+
     componentWillUnmount = () => {
-        clearInterval(this.interval);
+        this.props.cancelTimer()
     }
 
     chase_broken = () => {
@@ -96,11 +98,10 @@ export class CurrentUserObject extends React.Component {
             });
             this.setState({
                 chaserSocketID: undefined,
-                beingChased: false,
             })
+            this.props.updateChaseStatus()
         }
-        this.props.updateTimer(10)
-        clearInterval(this.interval);
+        this.props.cancelTimer()
     }
 
     user_clicked = () => {

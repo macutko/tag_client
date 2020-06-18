@@ -14,34 +14,6 @@ MapboxGL.setAccessToken(config.mapbox_key);
 
 
 export class GameScreen extends React.Component {
-    componentWillUnmount = () => {
-        console.log("Disconneting");
-        this.socket.emit('terminate');
-        this.socket.disconnect();
-    }
-
-    _updateUserPosition = () => {
-        // Rather use this position due to the accuracy compared to MapBox
-
-        Geolocation.getCurrentPosition(info => {
-            let lat = info["coords"]["latitude"];
-            let long = info["coords"]["longitude"];
-
-            let new_distance = distance(lat, long, this.state.currentPosition[0], this.state.currentPosition[1]);
-            let abs_diff = Math.abs(new_distance - this.state.currentDistance);
-            if (abs_diff >= 0.1) {
-                this.socket.emit('position_changed', {
-                    "latitude": lat,
-                    "longitude": long,
-                    "username": this.state.username
-                })
-                this.setState({currentPosition: [long, lat], currentDistance: new_distance}, function () {
-                    console.log("Absolute difference between new and old position: " + abs_diff);
-                });
-            }
-        });
-    };
-
     constructor(props) {
         super(props);
         this.state = {
@@ -80,6 +52,34 @@ export class GameScreen extends React.Component {
 
     }
 
+    componentWillUnmount = () => {
+        this.socket.emit('terminate');
+        this.socket.disconnect();
+        clearInterval(this.interval);
+    }
+
+    _updateUserPosition = () => {
+        // Rather use this position due to the accuracy compared to MapBox
+
+        Geolocation.getCurrentPosition(info => {
+            let lat = info["coords"]["latitude"];
+            let long = info["coords"]["longitude"];
+
+            let new_distance = distance(lat, long, this.state.currentPosition[0], this.state.currentPosition[1]);
+            let abs_diff = Math.abs(new_distance - this.state.currentDistance);
+            if (abs_diff >= 0.1) {
+                this.socket.emit('position_changed', {
+                    "latitude": lat,
+                    "longitude": long,
+                    "username": this.state.username
+                })
+                this.setState({currentPosition: [long, lat], currentDistance: new_distance}, function () {
+                    console.log("Absolute difference between new and old position: " + abs_diff);
+                });
+            }
+        });
+    };
+
     componentDidMount() {
         getUsername().then((data) => {
             this.setState({username: data})
@@ -96,11 +96,15 @@ export class GameScreen extends React.Component {
         this.setState({users: this.state.users})
         console.log(this.state.users)
     }
-    updateTimer = (data) => {
-        this.setState({timer: data})
+    startTimer = () => {
+        this.interval = setInterval(
+            () => this.setState((prevState) => ({timer: prevState.timer - 1})),
+            1000
+        );
     }
-    getTimer = () => {
-        return this.state.timer
+    cancelTimer = () => {
+        clearInterval(this.interval);
+        this.setState({timer: 10});
     }
     updateChaseStatus = () => {
         this.setState((prevState) => ({
@@ -116,12 +120,15 @@ export class GameScreen extends React.Component {
     render() {
         let other_users = Object.keys(this.state.users).map((key, index) => (
             <OtherUserObject key={index} id={key} userObject={this.state.users[key]}
-                             socket={this.socket} updateTimer={this.updateTimer} getTimer={this.getTimer}
-                             currentUser={this.state.username} updateChaseStatus={this.updateChaseStatus}
-                             getChaseStatus={this.getChaseStatus}/>
+                             socket={this.socket} currentUser={this.state.username}
+                             updateChaseStatus={this.updateChaseStatus}
+                             getChaseStatus={this.getChaseStatus} startTimer={this.startTimer}
+                             cancelTimer={this.cancelTimer} timer={this.state.timer}/>
         ))
         let current_user = <CurrentUserObject currentPosition={this.state.currentPosition} socket={this.socket}
-                                              updateTimer={this.updateTimer} getTimer={this.getTimer}/>
+                                              updateChaseStatus={this.updateChaseStatus}
+                                              getChaseStatus={this.getChaseStatus} startTimer={this.startTimer}
+                                              cancelTimer={this.cancelTimer} timer={this.state.timer}/>
 
         return (
             <View style={styles.container}>
