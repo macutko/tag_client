@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-community/async-storage";
 import {PermissionsAndroid} from "react-native";
 
-const _retrieveKeys = async () => {
+const retrieveKeys = async () => {
     try {
         const token = await AsyncStorage.getItem("token");
         if (token === undefined) {
@@ -64,7 +64,7 @@ const deg2rad = (deg) => {
 
 
 module.exports = {
-    _retrieveKeys,
+    retrieveKeys,
     requestPermission,
     distance,
     getUsername

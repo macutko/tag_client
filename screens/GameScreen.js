@@ -7,37 +7,49 @@ import {UserObject} from "../components/user/UserObject";
 import {CurrentUserObject} from "../components/user/CurrentUserObject";
 import * as io from "socket.io-client";
 import {Text} from "react-native-elements";
-import {distance, requestPermission, _retrieveKeys, getUsername} from "../helpers/utils";
+import {distance, getUsername, retrieveKeys} from "../helpers/utils";
+
 
 MapboxGL.setAccessToken(config.mapbox_key);
 const l = require('../helpers/logging');
+import {YellowBox} from 'react-native'
+
+YellowBox.ignoreWarnings([
+    'Unrecognized WebSocket connection option(s) `agent`, `perMessageDeflate`, `pfx`, `key`, `passphrase`, `cert`, `ca`, `ciphers`, `rejectUnauthorized`. Did you mean to put these under `headers`?'
+])
 
 export class GameScreen extends React.Component {
+
     constructor(props) {
         super(props);
-
-        this.timeRemaining = 10;
+        this.interval = undefined
+        this.endTime = 0;
+        this.socket = undefined
         this.state = {
-            chaseStatus: false,
+            chaseObject: {
+                chaseStatus: false,
+                chaserUsername: undefined,
+                chaserSocketID: undefined,
+            },
             currentDistance: 0,
-            token: undefined,
+            displayTimer: 10,
             users: {},
             currentUserObject: {
                 position: [-73.98330688476561, 40.76975180901395],
                 socketID: undefined,
                 username: undefined
+            },
+            targetObject: {
+                targetUsername: undefined,
+                targetSocketID: undefined
             }
         };
-        requestPermission().then(r => {
-            if (r === false) {
-                this.props.navigation.navigate('SignInScreen');
-            }
-        });
+
 
         MapboxGL.setTelemetryEnabled(false);
-        _retrieveKeys()
+
+        retrieveKeys()
             .then((token) => {
-                this.setState({token: token})
                 this.socket = io.connect(config.baseURL, {'forceNew': true});
                 this.socket.on('connect', socket => {
                     this.socket
@@ -48,7 +60,7 @@ export class GameScreen extends React.Component {
                                     socketID: this.socket.sessionId
                                 },
                             }), () => {
-                                console.log("Authenticated to play in sockets")
+                                this.updateUserPosition()
                             })
                         })
                         .emit('authenticate', {token: token})
@@ -60,14 +72,16 @@ export class GameScreen extends React.Component {
             }).catch(error => {
             console.log(error)
         });
-        getUsername().then((data) => {
-            this.state.currentUserObject.username = data
-        })
+
 
     }
 
+
     componentDidMount() {
         this.updateUserPosition();
+        getUsername().then((data) => {
+            this.state.currentUserObject.username = data
+        })
     }
 
     componentWillUnmount = () => {
@@ -80,28 +94,29 @@ export class GameScreen extends React.Component {
         // Rather use this position due to the accuracy compared to MapBox
 
         Geolocation.getCurrentPosition(info => {
-            let lat = info["coords"]["latitude"];
-            let long = info["coords"]["longitude"];
+                let lat = info["coords"]["latitude"];
+                let long = info["coords"]["longitude"];
 
-            let new_distance = distance(lat, long, this.state.currentUserObject.position[0], this.state.currentUserObject.position[1]);
-            let abs_diff = Math.abs(new_distance - this.state.currentDistance);
-            if (abs_diff >= 0.1) {
-                this.socket.emit('position_changed', {
-                    "latitude": lat,
-                    "longitude": long,
-                    "username": this.state.currentUserObject.username
-                })
-                this.setState(prevState => ({
-                    currentUserObject: {
-                        ...prevState.currentUserObject,
-                        position: [long, lat]
-                    },
-                    currentDistance: new_distance
-                }), () => {
-                    console.log("Absolute difference between new and old position: " + abs_diff);
-                })
-            }
-        });
+                let new_distance = distance(lat, long, this.state.currentUserObject.position[0], this.state.currentUserObject.position[1]);
+                let abs_diff = Math.abs(new_distance - this.state.currentDistance);
+                if (abs_diff >= 0.1) {
+                    this.socket.emit('position_changed', {
+                        "latitude": lat,
+                        "longitude": long,
+                        "username": this.state.currentUserObject.username
+                    })
+                    this.setState(prevState => ({
+                        currentUserObject: {
+                            ...prevState.currentUserObject,
+                            position: [long, lat]
+                        },
+                        currentDistance: new_distance
+                    }), () => {
+
+                    })
+                }
+            }, error => console.error(error), {enableHighAccuracy: true, timeout: 20000, maximumAge: 10000}
+        );
     };
 
     add_user = (data) => {
@@ -113,25 +128,40 @@ export class GameScreen extends React.Component {
         this.setState({users: this.state.users})
     }
 
-    componentDidUpdate(prevProps, prevState, snapshot) {
-
+    timeRemaining = () => {
+        return this.endTime - Date.now()
     }
 
     startChase = () => {
-        this.setState({
-            chaseStatus: true
-        }, () => {
+        this.endTime = Date.now() + 10000;
+        this.setState(prevState => ({
+            chaseObject: {
+                ...prevState.chaseObject,
+                chaseStatus: true,
+            }
+        }), () => {
+            console.log("chase started")
+            if (this.interval !== undefined) {
+                clearInterval(this.interval)
+            }
             this.interval = setInterval(
                 () => {
-                    this.timeRemaining = this.timeRemaining - 1
-                    l.timer(this.state.currentUserObject.username, `Timer: ${this.timeRemaining} \t ChaseStatus: ${this.state.chaseStatus}`)
-                    if (this.timeRemaining === 0) {
-                        this.setState({
-                            chaseStatus: false
-                        }, () => {
-                            clearInterval(this.interval)
-                            this.timeRemaining = 10
+                    this.setState({
+                        displayTimer: this.state.displayTimer - 1
+                    })
+                    if (this.timeRemaining() <= 0) {
+
+                        this.setState(prevState => ({
+                            chaseObject: {
+                                ...prevState.chaseObject,
+                                chaseStatus: false,
+                            },
+                            displayTimer: 10
+                        }), () => {
+                            l.timer(this.state.currentUserObject.username, `END: \t ChaseStatus: ${this.state.chaseObject.chaseStatus}`)
                         })
+                        clearInterval(this.interval)
+                        this.endTime = undefined;
                     }
                 },
                 1000
@@ -141,28 +171,65 @@ export class GameScreen extends React.Component {
     }
 
     stopChase = () => {
-        clearInterval(this.interval);
-        // this.chaseStatus = false;
-        this.timeRemaining = 10;
+        if (this.interval !== undefined) {
+            clearInterval(this.interval)
+        }
+        this.endTime = undefined;
+        this.setState(prevState => ({
+            chaseObject: {
+                ...prevState.chaseObject,
+                chaseStatus: false,
+            },
+            displayTimer: 10
+        }), () => {
+            clearInterval(this.interval)
+        })
+        this.updateTarget()
 
-        l.log(this.state.currentUserObject.username, `ChaseStats: ${this.state.chaseStatus}`)
+    }
+    updateChaserDetails = (chaserUsername = undefined, chaserSocketID = undefined) => {
+        this.setState(prevState => ({
+            chaseObject: {
+                ...prevState.chaseObject,
+                chaserUsername: chaserUsername,
+                chaserSocketID: chaserSocketID,
+            }
+        }))
+    }
+    updateTarget = (targetName = undefined, targetSocketID = undefined) => {
+        this.setState(prevstate => ({
+            targetObject: {
+                ...prevstate.targetObject,
+                targetUsername: targetName,
+                targetSocketID: targetSocketID
+            }
+        }))
     }
 
     render() {
+
+
         let other_users = Object.keys(this.state.users).map((key, index) => (
             <UserObject key={index} id={key} userObject={this.state.users[key]}
                         socket={this.socket} currentUser={this.state.currentUserObject}
-                        chaseStatus={this.state.chaseStatus} startChase={this.startChase}
-                        stopChase={this.stopChase} timer={this.timeRemaining}/>
+                        chaseObject={this.state.chaseObject} startChase={this.startChase}
+                        stopChase={this.stopChase} timer={this.timeRemaining}
+                        updateChaserDetails={this.updateChaserDetails} updateTarget={this.updateTarget}
+                        target={this.state.targetObject}/>
         ))
         let current_user = <CurrentUserObject id={this.state.currentUserObject.username}
                                               userObject={this.state.currentUserObject}
-                                              socket={this.socket} currentUser={this.state.currentUserObject}
-                                              chaseStatus={this.state.chaseStatus} startChase={this.startChase}
-                                              stopChase={this.stopChase} timer={this.timeRemaining}/>
+                                              socket={this.socket}
+                                              currentUser={this.state.currentUserObject}
+                                              chaseObject={this.state.chaseObject} startChase={this.startChase}
+                                              stopChase={this.stopChase} timer={this.timeRemaining}
+                                              updateChaserDetails={this.updateChaserDetails}
+                                              updateTarget={this.updateTarget} target={this.state.targetObject}
+        />
 
         return (
             <View style={styles.container}>
+                <Text style={{backgroundColor: "red"}}>{this.state.displayTimer}</Text>
                 <View style={{
                     width: 30,
                     backgroundColor: "transparent",
@@ -170,7 +237,7 @@ export class GameScreen extends React.Component {
                     top: "2%",
                     left: "2%",
                 }}>
-                    <Text style={{backgroundColor: "red"}}>{this.timeRemaining}</Text>
+
                 </View>
                 <MapboxGL.MapView
                     styleURL={MapboxGL.StyleURL.Street}
@@ -188,8 +255,8 @@ export class GameScreen extends React.Component {
                     }}/>
 
                     <View>
-                        {current_user}
-                        {other_users}
+                        {this.state.currentUserObject.username !== undefined && this.socket !== undefined && current_user}
+                        {this.state.currentUserObject.username !== undefined && this.socket !== undefined && other_users}
                     </View>
 
                 </MapboxGL.MapView>

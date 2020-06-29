@@ -22,7 +22,6 @@ export class LoginForm extends React.Component {
     _storeData = async (key, value) => {
         try {
             await AsyncStorage.setItem(key, value);
-            console.log(value);
         } catch (error) {
             console.log("Error saving data!!!")
         }
