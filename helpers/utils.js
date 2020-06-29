@@ -1,14 +1,31 @@
 import AsyncStorage from "@react-native-community/async-storage";
 import {PermissionsAndroid} from "react-native";
 
-const retrieveKeys = async () => {
+
+const _getFromMemory = async (keys) => {
     try {
-        const token = await AsyncStorage.getItem("token");
-        if (token === undefined) {
-            console.log("got nothing on token!");
-            console.log(token);
+        let values;
+        if (Array.isArray(keys)) {
+            let promises = []
+            keys.forEach(key => promises.push(AsyncStorage.getItem(key)));
+            values = await Promise.all(promises);
+            return values.filter(v => v != null)
         }
-        return token
+        return await AsyncStorage.getItem(keys);
+    } catch (error) {
+        console.log(error)
+    }
+};
+
+const _removeFromMemory = async (keys) => {
+    try {
+        if (Array.isArray(keys)) {
+            let promises = []
+            keys.forEach(key => promises.push(AsyncStorage.removeItem(key)));
+            await Promise.all(promises);
+        } else {
+            await AsyncStorage.removeItem(keys);
+        }
     } catch (error) {
         console.log(error)
     }
@@ -65,6 +82,8 @@ const deg2rad = (deg) => {
 
 module.exports = {
     retrieveKeys,
+    _getFromMemory,
+    _removeFromMemory,
     requestPermission,
     distance,
     getUsername

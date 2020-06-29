@@ -5,6 +5,9 @@ import {FormOverlay} from "../components/forms/FormOverlay";
 import {LoginForm} from "../components/forms/LoginForm";
 import {SignUpForm} from "../components/forms/SignUpForm";
 import {requestPermission} from "../helpers/utils";
+import {FormOverlay} from "../forms/FormOverlay";
+import {LoginForm} from "../forms/LoginForm";
+import {SignUpForm} from "../forms/SignUpForm";
 
 export class WelcomeScreen extends React.Component {
 

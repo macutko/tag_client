@@ -9,6 +9,7 @@ import * as io from "socket.io-client";
 import {Text} from "react-native-elements";
 import {distance, getUsername, retrieveKeys} from "../helpers/utils";
 
+import { requestPermission, _getFromMemory} from "../../helpers/utils";
 
 MapboxGL.setAccessToken(config.mapbox_key);
 const l = require('../helpers/logging');
