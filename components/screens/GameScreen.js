@@ -2,17 +2,16 @@ import {StyleSheet, View} from 'react-native';
 import * as React from 'react';
 import MapboxGL from "@react-native-mapbox-gl/maps";
 import Geolocation from '@react-native-community/geolocation';
-import config from "../constants/config";
-import {UserObject} from "../components/user/UserObject";
-import {CurrentUserObject} from "../components/user/CurrentUserObject";
+import config from "../../constants/config";
+import {UserObject} from "../user/UserObject";
+import {CurrentUserObject} from "../user/CurrentUserObject";
 import * as io from "socket.io-client";
 import {Text} from "react-native-elements";
-import {distance, getUsername, retrieveKeys} from "../helpers/utils";
+import {distance, getUsername, getFromMemory} from "../../helpers/utils";
 
-import { requestPermission, _getFromMemory} from "../../helpers/utils";
 
 MapboxGL.setAccessToken(config.mapbox_key);
-const l = require('../helpers/logging');
+const l = require('../../helpers/logging');
 import {YellowBox} from 'react-native'
 
 YellowBox.ignoreWarnings([
@@ -49,7 +48,7 @@ export class GameScreen extends React.Component {
 
         MapboxGL.setTelemetryEnabled(false);
 
-        retrieveKeys()
+        getFromMemory("token")
             .then((token) => {
                 this.socket = io.connect(config.baseURL, {'forceNew': true});
                 this.socket.on('connect', socket => {

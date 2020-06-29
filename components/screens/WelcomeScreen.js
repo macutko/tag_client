@@ -1,10 +1,7 @@
 import {View, StyleSheet} from 'react-native';
 import * as React from 'react';
 import {Button} from "react-native-elements";
-import {FormOverlay} from "../components/forms/FormOverlay";
-import {LoginForm} from "../components/forms/LoginForm";
-import {SignUpForm} from "../components/forms/SignUpForm";
-import {requestPermission} from "../helpers/utils";
+import {requestPermission} from "../../helpers/utils";
 import {FormOverlay} from "../forms/FormOverlay";
 import {LoginForm} from "../forms/LoginForm";
 import {SignUpForm} from "../forms/SignUpForm";
