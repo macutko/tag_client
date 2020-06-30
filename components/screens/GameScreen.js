@@ -67,6 +67,17 @@ export class GameScreen extends React.Component {
                         .on('position_update', (data) => {
                             this.add_user(data)
                         })
+                        .on('user_disconnected', (data) => {
+                            this.remove_user(data.userID)
+                        })
+                        .on('initial_location_status', (data) => {
+
+                            for (let key in data.locations) {
+                                this.add_user(data.locations[key])
+
+                            }
+
+                        })
                 });
 
             }).catch(error => {
@@ -127,7 +138,10 @@ export class GameScreen extends React.Component {
         }
         this.setState({users: this.state.users})
     }
-
+    remove_user = (userID) => {
+        delete this.state.users[userID]
+        this.setState({users: this.state.users})
+    }
     timeRemaining = () => {
         return this.endTime - Date.now()
     }
