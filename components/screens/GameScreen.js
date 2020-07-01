@@ -7,7 +7,7 @@ import {UserObject} from "../user/UserObject";
 import {CurrentUserObject} from "../user/CurrentUserObject";
 import * as io from "socket.io-client";
 import {Text} from "react-native-elements";
-import {distance, getUsername, getFromMemory} from "../../helpers/utils";
+import {distance, getUsername, getFromMemory, removeFromMemory} from "../../helpers/utils";
 
 
 MapboxGL.setAccessToken(config.mapbox_key);
@@ -77,6 +77,11 @@ export class GameScreen extends React.Component {
 
                             }
 
+                        })
+                        .on('disconnect',(data)=>{
+                            removeFromMemory(["token", "username"]).then(() => {
+                                this.props.navigation.navigate('WelcomeScreen')
+                            })
                         })
                 });
 
