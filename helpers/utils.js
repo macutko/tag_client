@@ -1,7 +1,8 @@
 import AsyncStorage from "@react-native-community/async-storage";
 import {PermissionsAndroid} from "react-native";
 
-const _getFromMemory = async (keys) => {
+
+const getFromMemory = async (keys) => {
     try {
         let values;
         if (Array.isArray(keys)) {
@@ -16,7 +17,7 @@ const _getFromMemory = async (keys) => {
     }
 };
 
-const _removeFromMemory = async (keys) => {
+const removeFromMemory = async (keys) => {
     try {
         if (Array.isArray(keys)) {
             let promises = []
@@ -25,6 +26,19 @@ const _removeFromMemory = async (keys) => {
         } else {
             await AsyncStorage.removeItem(keys);
         }
+    } catch (error) {
+        console.log(error)
+    }
+};
+
+const getUsername = async () => {
+    try {
+        const name = await AsyncStorage.getItem("username");
+        if (name === undefined) {
+            console.log("got nothing on name!");
+            console.log(name);
+        }
+        return name
     } catch (error) {
         console.log(error)
     }
@@ -65,9 +79,11 @@ const deg2rad = (deg) => {
     return deg * (Math.PI / 180)
 };
 
+
 module.exports = {
-    _getFromMemory,
-    _removeFromMemory,
+    getFromMemory,
+    removeFromMemory,
     requestPermission,
-    distance
+    distance,
+    getUsername
 }

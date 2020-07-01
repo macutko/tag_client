@@ -1,6 +1,6 @@
 import {SectionList, StyleSheet, Text, View} from "react-native";
 import * as React from "react";
-import {_removeFromMemory} from '../../helpers/utils'
+import {removeFromMemory} from '../../helpers/utils'
 
 import { Button } from 'react-native-elements';
 
@@ -24,7 +24,7 @@ export class SettingsScreen extends React.Component {
     }
 
     handleLogout = () => {
-        _removeFromMemory(["token", "username"]).then(() => {
+        removeFromMemory(["token", "username"]).then(() => {
             this.props.navigation.navigate('WelcomeScreen')
         })
     }

@@ -6,7 +6,7 @@ import {createStackNavigator} from '@react-navigation/stack';
 import {AppState} from 'react-native'
 import {WelcomeScreen} from "./components/screens/WelcomeScreen";
 import {UserNavigation} from "./components/user/UserNavigation";
-import {_getFromMemory} from "./helpers/utils";
+import {getFromMemory} from "./helpers/utils";
 
 export const navigationRef = React.createRef();
 const Stack = createStackNavigator();
@@ -21,7 +21,7 @@ export default class App extends React.Component {
 
     componentDidMount() {
         AppState.addEventListener('change', this._handleAppStateChange);
-        _getFromMemory("token").then((token) => {
+        getFromMemory("token").then((token) => {
             if (token)
                 navigationRef.current?.navigate("UserNavigation")
         })
