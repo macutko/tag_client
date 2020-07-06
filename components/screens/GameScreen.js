@@ -13,6 +13,7 @@ import {distance, getUsername, getFromMemory, removeFromMemory} from "../../help
 MapboxGL.setAccessToken(config.mapbox_key);
 const l = require('../../helpers/logging');
 import {YellowBox} from 'react-native'
+import {ChaseInfo} from "../chaseObjects/chaseInfo";
 
 YellowBox.ignoreWarnings([
     'Unrecognized WebSocket connection option(s) `agent`, `perMessageDeflate`, `pfx`, `key`, `passphrase`, `cert`, `ca`, `ciphers`, `rejectUnauthorized`. Did you mean to put these under `headers`?'
@@ -30,6 +31,7 @@ export class GameScreen extends React.Component {
                 chaseStatus: false,
                 chaserUsername: undefined,
                 chaserSocketID: undefined,
+                lastOutcome: undefined,
             },
             currentDistance: 0,
             displayTimer: 10,
@@ -73,12 +75,15 @@ export class GameScreen extends React.Component {
                         .on('initial_location_status', (data) => {
 
                             for (let key in data.locations) {
-                                this.add_user(data.locations[key])
+                                // TODO: make sure that the current user doesnt add itself
+                                if (data.locations[key].socketID !== this.state.currentUserObject.socketID) {
+                                    this.add_user(data.locations[key])
+                                }
 
                             }
 
                         })
-                        .on('disconnect',(data)=>{
+                        .on('disconnect', (data) => {
                             removeFromMemory(["token", "username"]).then(() => {
                                 this.props.navigation.navigate('WelcomeScreen')
                             })
@@ -168,7 +173,7 @@ export class GameScreen extends React.Component {
                     this.setState({
                         displayTimer: this.state.displayTimer - 1
                     })
-                    if (this.timeRemaining() <= 0) {
+                    if (this.timeRemaining() <= -1) {
 
                         this.setState(prevState => ({
                             chaseObject: {
@@ -206,15 +211,17 @@ export class GameScreen extends React.Component {
         this.updateTarget()
 
     }
-    updateChaserDetails = (chaserUsername = undefined, chaserSocketID = undefined) => {
+    updateChaserDetails = (chaserUsername = undefined, chaserSocketID = undefined, outcome = undefined) => {
         this.setState(prevState => ({
             chaseObject: {
                 ...prevState.chaseObject,
                 chaserUsername: chaserUsername,
                 chaserSocketID: chaserSocketID,
+                lastOutcome: outcome,
             }
         }))
     }
+
     updateTarget = (targetName = undefined, targetSocketID = undefined) => {
         this.setState(prevstate => ({
             targetObject: {
@@ -227,6 +234,10 @@ export class GameScreen extends React.Component {
 
     render() {
 
+        let chaseInfo = (<View style={styles.chaseContainer}>
+            <ChaseInfo timer={this.state.displayTimer}
+                       chaseObject={this.state.chaseObject} />
+        </View>)
 
         let other_users = Object.keys(this.state.users).map((key, index) => (
             <UserObject key={index} id={key} userObject={this.state.users[key]}
@@ -234,7 +245,7 @@ export class GameScreen extends React.Component {
                         chaseObject={this.state.chaseObject} startChase={this.startChase}
                         stopChase={this.stopChase} timer={this.timeRemaining}
                         updateChaserDetails={this.updateChaserDetails} updateTarget={this.updateTarget}
-                        target={this.state.targetObject}/>
+                        target={this.state.targetObject} updateDistance={this.updateDistance}/>
         ))
         let current_user = <CurrentUserObject id={this.state.currentUserObject.username}
                                               userObject={this.state.currentUserObject}
@@ -244,55 +255,78 @@ export class GameScreen extends React.Component {
                                               stopChase={this.stopChase} timer={this.timeRemaining}
                                               updateChaserDetails={this.updateChaserDetails}
                                               updateTarget={this.updateTarget} target={this.state.targetObject}
+                                              updateDistance={this.updateDistance}
         />
 
         return (
-            <View style={styles.container}>
-                <Text style={{backgroundColor: "red"}}>{this.state.displayTimer}</Text>
-                <View style={{
-                    width: 30,
-                    backgroundColor: "transparent",
-                    position: 'absolute',
-                    top: "2%",
-                    left: "2%",
-                }}>
+            <View id="container" style={styles.container}>
+                <View id="mapContainer" style={styles.mapContainer}>
+                    <MapboxGL.MapView
+                        styleURL={MapboxGL.StyleURL.Street}
+                        style={styles.map}
+                        logoEnabled={false}
+                        compassEnabled={true}
+                        compassViewPosition={1}
+                        attributionEnabled={false}
+                    >
+                        <MapboxGL.UserLocation visible={false}
+                                               showsUserHeadingIndicator={true} onUpdate={this.updateUserPosition}/>
+                        <MapboxGL.Camera zoomLevel={15} centerCoordinate={this.state.currentUserObject.position}
+                                         defaultSettings={{
+                                             centerCoordinate: this.state.currentUserObject.position,
+                                             zoomLevel: 4,
+                                         }}/>
 
+                        <View>
+
+                            {this.state.currentUserObject.username !== undefined && this.socket !== undefined && current_user}
+                            {this.state.currentUserObject.username !== undefined && this.socket !== undefined && other_users}
+                        </View>
+
+                    </MapboxGL.MapView>
                 </View>
-                <MapboxGL.MapView
-                    styleURL={MapboxGL.StyleURL.Street}
-                    style={styles.container}
-                    logoEnabled={false}
-                    compassEnabled={true}
-                    compassViewPosition={1}
-                    attributionEnabled={false}
-                >
-                    <MapboxGL.UserLocation visible={false}
-                                           showsUserHeadingIndicator={true} onUpdate={this.updateUserPosition}/>
-                    <MapboxGL.Camera zoomLevel={20} defaultSettings={{
-                        centerCoordinate: this.state.currentUserObject.position,
-                        zoomLevel: 2,
-                    }}/>
 
-                    <View>
-                        {this.state.currentUserObject.username !== undefined && this.socket !== undefined && current_user}
-                        {this.state.currentUserObject.username !== undefined && this.socket !== undefined && other_users}
-                    </View>
-
-                </MapboxGL.MapView>
-
-
+                {this.state.chaseObject.chaseStatus ? chaseInfo : undefined}
+                <Text id="status" style={styles.status}>Current chase status: {this.state.chaseObject.lastOutcome}</Text>
             </View>
-        );
+        )
+            ;
     }
 }
 
 const styles = StyleSheet.create({
+    status: {
+        fontSize: 15,
+        fontWeight: 'bold',
+        textAlign: 'left',
+        color: 'red',
+    },
     container: {
         flex: 1,
-        padding: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingBottom: 26,
+        paddingTop:10,
     },
     map: {
-        height: 400,
-        marginTop: 80
+        flex: 1,
+        width: '100%',
+        height: '100%',
+    },
+    mapContainer: {
+        width: '100%',
+        height: '100%',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    chaseContainer: {
+        opacity: 0.5,
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        width: '100%',
+        height: '100%'
     }
 });
