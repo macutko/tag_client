@@ -1,6 +1,7 @@
 import {View, StyleSheet} from 'react-native';
 import * as React from 'react';
 import {Button} from "react-native-elements";
+import {requestPermission} from "../../helpers/utils";
 import {FormOverlay} from "../forms/FormOverlay";
 import {LoginForm} from "../forms/LoginForm";
 import {SignUpForm} from "../forms/SignUpForm";
@@ -36,7 +37,16 @@ export class WelcomeScreen extends React.Component {
 
     handleLoggin = () => {
         this.closeModal();
-        this.props.navigation.navigate('UserNavigation');
+        requestPermission().then(r => {
+            if (r === false) {
+                // this.props.navigation.navigate('SignInScreen');
+                //TODO: give some alert box
+                console.log("I need permission, doing nothing!")
+            } else {
+                // TODO: check for location turned on
+                this.props.navigation.navigate('UserNavigation');
+            }
+        })
     };
 
     render = () => {

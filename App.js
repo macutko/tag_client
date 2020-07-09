@@ -5,7 +5,7 @@ import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import {WelcomeScreen} from "./components/screens/WelcomeScreen";
 import {UserNavigation} from "./components/user/UserNavigation";
-import {_getFromMemory} from "./helpers/utils";
+import {getFromMemory} from "./helpers/utils";
 import {ErrorBoundary} from 'react-error-boundary'
 import {GlobalErrorAlert} from "./components/error/globalErrorAlert";
 import {JSExceptionHandler} from "./helpers/errorHandler/globalExceptionHandlers";
@@ -24,7 +24,7 @@ export default class App extends React.Component {
 
     componentDidMount() {
         AppState.addEventListener('change', this._handleAppStateChange);
-        _getFromMemory("token").then((token) => {
+        getFromMemory("token").then((token) => {
             if (token)
                 navigationRef.current?.navigate("UserNavigation")
         })
@@ -33,7 +33,6 @@ export default class App extends React.Component {
     componentWillUnmount() {
         AppState.removeEventListener('change', this._handleAppStateChange);
     }
-
     _handleAppStateChange = (nextAppState) => {
         if (this.state.appState.match(/inactive|background/) && nextAppState === 'active') {
             console.log('App has come to the foreground!')
