@@ -43,4 +43,6 @@ target 'TAGv2' do
 
   # react-native-cli autolinking
   use_native_modules!
+  pod 'ReactNativeExceptionHandler', :path => '../node_modules/react-native-exception-handler'
+
 end

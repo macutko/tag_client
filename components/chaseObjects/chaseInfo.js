@@ -1,5 +1,5 @@
 import * as React from "react";
-import {Overlay, Text} from "react-native-elements";
+import {Text} from "react-native-elements";
 import {View, StyleSheet} from "react-native";
 
 export class ChaseInfo extends React.Component {
