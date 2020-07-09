@@ -56,12 +56,13 @@ export class GameScreen extends React.Component {
         }); //TODO: check if this is reliable and works on multiple relogins
 
         MapboxGL.setTelemetryEnabled(false);
+        const self = this
         _getFromMemory("token")
-            .then((token) => {
-                this.setState({token: token})
-                this.socket = io.connect(config.baseURL, {'forceNew': true});
-                this.socket.on('connect', socket => {
-                    this.socket
+            .then(token => {
+                self.setState({token: token})
+                self.socket = io.connect(config.baseURL, {'forceNew': true});
+                self.socket.on('connect', socket => {
+                    self.socket
                         .on('authenticated', () => {
                             console.log("Authorized to PLAY!!!")
                         })
@@ -122,8 +123,8 @@ export class GameScreen extends React.Component {
                     }}/>
 
 
-                    {current_user}
-                    {other_users}
+                    {this.state.token ? current_user : null}
+                    {this.state.token ? other_users : null}
 
 
                 </MapboxGL.MapView>
