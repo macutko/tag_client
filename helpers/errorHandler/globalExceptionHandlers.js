@@ -34,7 +34,7 @@ const informDevTeam = (error) => {
     }).then(response => {
         console.log('Dev team informed')
     }).catch(error => {
-        console.log(error.response.data.message)
+        console.log(error)
     })
 
 
